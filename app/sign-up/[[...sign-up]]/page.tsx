@@ -16,6 +16,8 @@ export default function SignUpPage() {
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
   const [hasRedirected, setHasRedirected] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendAttempts, setResendAttempts] = useState(0);
 
   const { user, isSignedIn, isLoaded: userLoaded } = useUser();
   const { signUp, isLoaded } = useSignUp();
@@ -38,6 +40,33 @@ export default function SignUpPage() {
   const handleSignUpSuccess = useCallback(() => {
     navigateWithTable("/payment-options");
   }, [navigateWithTable]);
+
+  // Handle resend verification code
+  const handleResendCode = useCallback(async () => {
+    if (!signUp || resendCooldown > 0) return;
+
+    try {
+      console.log('🔄 Resending verification code...');
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+
+      setResendAttempts(prev => prev + 1);
+      setResendCooldown(30); // 30 second cooldown
+
+      console.log('✅ Verification code resent successfully');
+    } catch (error) {
+      console.error('❌ Error resending verification code:', error);
+    }
+  }, [signUp, resendCooldown]);
+
+  // Cooldown timer effect
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => {
+        setResendCooldown(prev => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
 
   // Note: Redirect handling is now managed in the root page (/)
   // to properly distinguish between payment flow vs payment-success contexts
@@ -294,45 +323,6 @@ export default function SignUpPage() {
                 <p className="text-gray-600">Cuéntanos mas sobre ti</p>
               </div>
 
-              {/* <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Age</label>
-                    <select 
-                      value={age}
-                      onChange={(e) => setAge(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    >
-                      <option value="">Select age</option>
-                      {Array.from({ length: 83 }, (_, i) => 18 + i).map(ageOption => (
-                        <option key={ageOption} value={ageOption}>{ageOption}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Gender</label>
-                    <select 
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    >
-                      <option value="">Select gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="non-binary">Non-binary</option>
-                      <option value="prefer-not-to-say">Prefer not to say</option>
-                    </select>
-                  </div>
-                </div>
-
-                <Clerk.Field name="username" className="space-y-2">
-                  <Clerk.Label className="block text-sm font-medium text-gray-700">Username (Optional)</Clerk.Label>
-                  <Clerk.Input className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" />
-                  <Clerk.FieldError className="text-red-600 text-xs" />
-                </Clerk.Field>
-              </div> */}
-
               <SignUp.Action
                 submit
                 className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full font-normal cursor-pointer transition-colors mt-6"
@@ -377,6 +367,11 @@ export default function SignUpPage() {
                   <p className="text-gray-200">
                     Hemos enviado un código de verficación a tu correo
                   </p>
+                  {resendAttempts > 0 && (
+                    <p className="text-green-200 text-sm mt-2">
+                      Código reenviado {resendAttempts} {resendAttempts === 1 ? 'vez' : 'veces'}
+                    </p>
+                  )}
                 </div>
 
                 <Clerk.Field name="code" className="space-y-2">
@@ -393,6 +388,39 @@ export default function SignUpPage() {
                 >
                   Verificar Email
                 </SignUp.Action>
+
+                {/* Resend Code Button */}
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={handleResendCode}
+                    disabled={resendCooldown > 0}
+                    className={`text-sm underline transition-colors ${
+                      resendCooldown > 0
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-white hover:text-gray-200 cursor-pointer'
+                    }`}
+                  >
+                    {resendCooldown > 0
+                      ? `Reenviar código en ${resendCooldown}s`
+                      : '¿No recibiste el código? Reenviar'
+                    }
+                  </button>
+                </div>
+
+                {/* Troubleshooting Tips */}
+                <div className="mt-4 text-center">
+                  <details className="text-xs text-gray-300">
+                    <summary className="cursor-pointer hover:text-white">
+                      ¿Problemas para recibir el código?
+                    </summary>
+                    <div className="mt-2 text-left space-y-1">
+                      <p>• Revisa tu carpeta de spam/correo no deseado</p>
+                      <p>• Verifica que la dirección de email sea correcta</p>
+                      <p>• Espera de 2-3 minutos para recibir el código</p>
+                      <p>• Intenta reenviar el código usando el botón de arriba</p>
+                    </div>
+                  </details>
+                </div>
               </SignUp.Strategy>
             </SignUp.Step>
           </SignUp.Root>
