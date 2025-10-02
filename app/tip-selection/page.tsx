@@ -156,7 +156,9 @@ export default function TipSelectionPage() {
 
   const tipAmount = calculateTipAmount();
   const commissionAmount = baseAmount * 0.02; // 2% de comisión
-  const paymentAmount = baseAmount + tipAmount + commissionAmount;
+  const subtotalEcartpay = baseAmount + tipAmount + commissionAmount;
+  const ivaAmount = subtotalEcartpay * 0.16; // 16% de IVA sobre el subtotal
+  const paymentAmount = subtotalEcartpay + ivaAmount;
 
   const handleTipPercentage = (percentage: number) => {
     setTipPercentage(percentage);
@@ -179,10 +181,11 @@ export default function TipSelectionPage() {
   const handleContinueToCardSelection = () => {
     const queryParams = new URLSearchParams({
       type: paymentType,
-      amount: paymentAmount.toString(), // Total con propina y comisión para eCardPay
+      amount: paymentAmount.toString(), // Total con propina, comisión e IVA para eCardPay
       baseAmount: baseAmount.toString(), // Monto base sin propina ni comisión para BD
       tipAmount: tipAmount.toString(), // Propina por separado
       commissionAmount: commissionAmount.toString(), // Comisión por separado
+      ivaAmount: ivaAmount.toString(), // IVA por separado (solo para eCardPay)
       ...(userName && { userName }),
       ...(paymentType === "select-items" && {
         selectedItems: selectedItems.join(","),
@@ -381,15 +384,19 @@ export default function TipSelectionPage() {
         <div className="bg-white px-8 pb-6 space-y-4">
           {/* Resumen del pago */}
           <div className="space-y-2">
-            {/* Total de la Mesa */}
-            <div className="flex justify-between items-center">
-              <span className="text-lg font-medium text-black">
-                Total de la Mesa
-              </span>
-              <span className="font-medium text-black">
-                ${tableTotalPrice.toFixed(2)} MXN
-              </span>
-            </div>
+            {/* Total de la Mesa - solo mostrar si NO es full-bill ni equal-shares */}
+            {paymentType !== "full-bill" &&
+              paymentType !== "equal-shares" &&
+              paymentType !== "choose-amount" && (
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-medium text-black">
+                    Total de la Mesa
+                  </span>
+                  <span className="font-medium text-black">
+                    ${tableTotalPrice.toFixed(2)} MXN
+                  </span>
+                </div>
+              )}
 
             {/* Pagado */}
             {paidAmount > 0 && (
@@ -401,15 +408,17 @@ export default function TipSelectionPage() {
               </div>
             )}
 
-            {/* Restante por pagar */}
-            <div className="flex justify-between items-center">
-              <span className="text-[#eab3f4] font-medium">
-                Restante por pagar:
-              </span>
-              <span className="text-[#eab3f4] font-medium">
-                ${unpaidAmount.toFixed(2)} MXN
-              </span>
-            </div>
+            {/* Restante por pagar - solo mostrar si NO es full-bill */}
+            {paymentType !== "full-bill" && (
+              <div className="flex justify-between items-center">
+                <span className="text-[#eab3f4] font-medium">
+                  Restante por pagar:
+                </span>
+                <span className="text-[#eab3f4] font-medium">
+                  ${unpaidAmount.toFixed(2)} MXN
+                </span>
+              </div>
+            )}
 
             {/* Tu parte */}
             <div className="flex justify-between items-center">
@@ -477,6 +486,17 @@ export default function TipSelectionPage() {
               </div>
             )}
           </div>
+
+          {/* IVA */}
+          {/*
+          <div className="pt-2">
+            <div className="flex justify-between items-center">
+              <span className="text-black font-medium">IVA (16%)</span>
+              <span className="text-black font-medium">
+                ${ivaAmount.toFixed(2)} MXN
+              </span>
+            </div>
+          </div>*/}
 
           {/* Total final */}
           <div className="border-t border-gray-200 pt-4">
@@ -575,7 +595,7 @@ export default function TipSelectionPage() {
               </p>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-black font-medium">Tu parte</span>
+                  <span className="text-black font-medium">+ Tu parte</span>
                   <span className="text-black font-medium">
                     ${baseAmount.toFixed(2)} MXN
                   </span>
@@ -589,19 +609,15 @@ export default function TipSelectionPage() {
                   </div>
                 )}
                 <div className="flex justify-between items-center">
-                  <span className="text-black font-medium">
-                    + Comisión (2%)
-                  </span>
+                  <span className="text-black font-medium">+ Comisión</span>
                   <span className="text-black font-medium">
                     ${commissionAmount.toFixed(2)} MXN
                   </span>
                 </div>
-                <div className="border-t border-[#8e8e8e] pt-3 flex justify-between items-center">
-                  <span className="text-black font-semibold text-lg">
-                    Total
-                  </span>
-                  <span className="text-black font-semibold text-lg">
-                    ${paymentAmount.toFixed(2)} MXN
+                <div className="flex justify-between items-center">
+                  <span className="text-black font-medium">+ IVA (16%)</span>
+                  <span className="text-black font-medium">
+                    ${ivaAmount.toFixed(2)} MXN
                   </span>
                 </div>
               </div>

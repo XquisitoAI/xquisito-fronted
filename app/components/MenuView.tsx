@@ -8,6 +8,7 @@ import { Search } from "lucide-react";
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useUserData } from "../context/UserDataContext";
+import { useTableNavigation } from "../hooks/useTableNavigation";
 
 interface MenuViewProps {
   tableNumber?: string;
@@ -17,6 +18,7 @@ export default function MenuView({ tableNumber }: MenuViewProps) {
   const [filter, setFilter] = useState("Todo");
   const { user } = useUser();
   const { signUpData } = useUserData();
+  const { navigateWithTable } = useTableNavigation();
 
   const categorias = ["Todo", "Populares", "Desayunos", "Bebidas", "Extras"];
 
@@ -41,7 +43,10 @@ export default function MenuView({ tableNumber }: MenuViewProps) {
       <main className="mt-72 relative z-10">
         <div className="bg-white rounded-t-4xl flex flex-col items-center px-6">
           {/* Assistent Icon */}
-          <div className="ml-auto bg-white rounded-full text-black border border-gray-400 p-2 cursor-pointer hover:bg-gray-50 mt-6 shadow-sm">
+          <div
+            onClick={() => navigateWithTable("/pepper")}
+            className="ml-auto bg-white rounded-full text-black border border-gray-400 p-2 cursor-pointer hover:bg-gray-50 mt-6 shadow-sm"
+          >
             <img src="/logo-short-green.webp" alt="AI" className="size-6" />
           </div>
 

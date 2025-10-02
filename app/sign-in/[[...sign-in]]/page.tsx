@@ -6,7 +6,7 @@ import * as SignIn from "@clerk/elements/sign-in";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ScanFace, Mail, KeyRound } from "lucide-react";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useSignIn } from "@clerk/nextjs";
 
 function SignInContent() {
   const router = useRouter();
@@ -14,6 +14,14 @@ function SignInContent() {
   const { navigateWithTable } = useTableNavigation();
   const { isSignedIn, isLoaded } = useUser();
   const [hasRedirected, setHasRedirected] = useState(false);
+  const { signIn } = useSignIn();
+  const [forgotPasswordStep, setForgotPasswordStep] = useState<
+    "idle" | "email" | "code" | "password"
+  >("idle");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [error, setError] = useState("");
 
   const tableNumber = searchParams.get("table");
 
@@ -52,6 +60,163 @@ function SignInContent() {
     }
   }, [isSignedIn, tableNumber, hasRedirected, handleSignInSuccess]);
 
+  const handleForgotPasswordEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await signIn?.create({
+        strategy: "reset_password_email_code",
+        identifier: email,
+      });
+      setForgotPasswordStep("code");
+      setError("");
+    } catch (err: any) {
+      setError(err.errors?.[0]?.message || "Error al enviar el código");
+    }
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotPasswordStep("password");
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await signIn?.attemptFirstFactor({
+        strategy: "reset_password_email_code",
+        code,
+        password: newPassword,
+      });
+      setForgotPasswordStep("idle");
+      setError("");
+      alert("Contraseña actualizada exitosamente");
+    } catch (err: any) {
+      setError(err.errors?.[0]?.message || "Error al actualizar la contraseña");
+    }
+  };
+
+  if (forgotPasswordStep !== "idle") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col justify-center items-center px-4">
+        <div className="relative z-10 w-full max-w-md text-center flex flex-col items-center">
+          <div className="mb-6">
+            <img
+              src="/logo-short-green.webp"
+              alt="Xquisito Logo"
+              className="size-18 justify-self-center"
+            />
+          </div>
+          <div className="w-full">
+            {forgotPasswordStep === "email" && (
+              <form onSubmit={handleForgotPasswordEmail}>
+                <div className="mb-6 text-center">
+                  <h1 className="text-xl font-medium text-white mb-2">
+                    Recupera tu contraseña
+                  </h1>
+                  <p className="text-gray-200 text-sm">
+                    Ingresa tu email para recibir un código
+                  </p>
+                </div>
+
+                <div className="relative mb-4">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
+                  <input
+                    required
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] focus:border-transparent"
+                    placeholder="Email"
+                  />
+                </div>
+
+                {error && <p className="text-rose-400 text-xs mb-4">{error}</p>}
+
+                <button
+                  type="submit"
+                  className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full cursor-pointer transition-colors"
+                >
+                  Enviar código
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setForgotPasswordStep("idle")}
+                  className="text-white text-sm underline cursor-pointer mt-4 block text-center w-full"
+                >
+                  Volver al inicio de sesión
+                </button>
+              </form>
+            )}
+
+            {forgotPasswordStep === "code" && (
+              <form onSubmit={handleVerifyCode}>
+                <div className="mb-6 text-center">
+                  <h1 className="text-xl font-medium text-white mb-2">
+                    Revisa tu email
+                  </h1>
+                  <p className="text-gray-200 text-sm">
+                    Hemos enviado un código de verificación a {email}
+                  </p>
+                </div>
+
+                <input
+                  required
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  className="w-full px-3 py-2 border bg-white text-black border-[#d9d9d9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] focus:border-transparent text-center tracking-widest mb-4"
+                  placeholder="Código"
+                />
+
+                <button
+                  type="submit"
+                  className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full cursor-pointer transition-colors"
+                >
+                  Continuar
+                </button>
+              </form>
+            )}
+
+            {forgotPasswordStep === "password" && (
+              <form onSubmit={handleResetPassword}>
+                <div className="mb-6 text-center">
+                  <h1 className="text-xl font-medium text-white mb-2">
+                    Nueva contraseña
+                  </h1>
+                  <p className="text-gray-200 text-sm">
+                    Ingresa tu nueva contraseña
+                  </p>
+                </div>
+
+                <div className="relative mb-4">
+                  <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
+                  <input
+                    required
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] focus:border-transparent"
+                    placeholder="Nueva contraseña"
+                  />
+                </div>
+
+                {error && <p className="text-rose-400 text-xs mb-4">{error}</p>}
+
+                <button
+                  type="submit"
+                  className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full cursor-pointer transition-colors"
+                >
+                  Actualizar contraseña
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col justify-center items-center px-4">
       <div className="relative z-10 w-full max-w-md text-center flex flex-col items-center">
@@ -85,7 +250,7 @@ function SignInContent() {
                   <Clerk.FieldError className="text-rose-400 text-xs" />
                 </Clerk.Field>
 
-                <Clerk.Field name="password" className="space-y-2 relative">
+                <Clerk.Field name="password" className="space-y-2">
                   <div className="relative">
                     <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
                     <Clerk.Input
@@ -111,13 +276,23 @@ function SignInContent() {
                 </div>
               </div>
 
-              <div
-                className="text-white text-sm my-8 underline cursor-pointer"
-                onClick={() => {
-                  navigateWithTable("/payment-options");
-                }}
+              <button
+                type="button"
+                onClick={() => setForgotPasswordStep("email")}
+                className="text-white text-sm underline cursor-pointer mt-8 mb-2 block mx-auto"
               >
-                Continuar como invitado
+                Olvidaste tu contraseña
+              </button>
+
+              <div className="mb-8">
+                <div
+                  className="text-white text-sm underline cursor-pointer text-center"
+                  onClick={() => {
+                    navigateWithTable("/payment-options");
+                  }}
+                >
+                  Continuar como invitado
+                </div>
               </div>
 
               {/* Social Login */}
@@ -157,6 +332,26 @@ function SignInContent() {
                     <path fill="#ffba08" d="M13 13h10v10H13z" />
                   </svg>
                 </Clerk.Connection>
+
+                <Clerk.Connection
+                  name="facebook"
+                  className="p-3 border border-white rounded-full hover:bg-white/10 transition-colors font-medium cursor-pointer"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="size-6"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="#1877F2"
+                      d="M24 12c0-6.627-5.373-12-12-12S0 5.373 0 12c0 5.99 4.388 10.954 10.125 11.854V15.47H7.078V12h3.047V9.356c0-3.007 1.792-4.668 4.533-4.668 1.312 0 2.686.234 2.686.234v2.953H15.83c-1.491 0-1.956.925-1.956 1.874V12h3.328l-.532 3.47h-2.796v8.385C19.612 22.954 24 17.99 24 12z"
+                    />
+                    <path
+                      fill="#fff"
+                      d="M16.671 15.47L17.203 12h-3.328V9.749c0-.949.465-1.874 1.956-1.874h1.513V4.922s-1.374-.234-2.686-.234c-2.741 0-4.533 1.66-4.533 4.668V12H7.078v3.47h3.047v8.385a12.09 12.09 0 003.75 0V15.47h2.796z"
+                    />
+                  </svg>
+                </Clerk.Connection>
               </div>
 
               <div className="relative my-6">
@@ -183,34 +378,6 @@ function SignInContent() {
               >
                 Crear cuenta
               </div>
-            </SignIn.Step>
-
-            <SignIn.Step name="verifications">
-              <SignIn.Strategy name="reset_password_email_code">
-                <div className="mb-6 text-center">
-                  <h1 className="text-2xl font-medium text-white mb-2">
-                    Revisa tu email
-                  </h1>
-                  <p className="text-gray-200">
-                    Hemos enviado un código de recuperación a tu correo
-                  </p>
-                </div>
-
-                <Clerk.Field name="code" className="space-y-2">
-                  <Clerk.Input
-                    placeholder="Código"
-                    className="w-full px-3 py-2 border bg-white text-black border-[#d9d9d9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] focus:border-transparent text-center tracking-widest"
-                  />
-                  <Clerk.FieldError className="text-rose-400 text-xs" />
-                </Clerk.Field>
-
-                <SignIn.Action
-                  submit
-                  className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full font-normal cursor-pointer transition-colors mt-6"
-                >
-                  Verificar código
-                </SignIn.Action>
-              </SignIn.Strategy>
             </SignIn.Step>
           </SignIn.Root>
         </div>

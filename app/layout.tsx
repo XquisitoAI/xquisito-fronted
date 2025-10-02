@@ -6,7 +6,8 @@ import { TableProvider } from "./context/TableContext";
 import { GuestProvider } from "./context/GuestContext";
 import { PaymentProvider } from "./context/PaymentContext";
 import { UserDataProvider } from "./context/UserDataContext";
-import { ClerkProvider } from '@clerk/nextjs';
+import { ClerkProvider } from "@clerk/nextjs";
+import { esMX } from "@clerk/localizations";
 
 const helveticaNeue = localFont({
   src: [
@@ -89,7 +90,8 @@ export const metadata: Metadata = {
   description: "Tu menú digital con un toque de NFC",
   manifest: "/manifest.json",
   themeColor: "#000000",
-  viewport: "minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover",
+  viewport:
+    "minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover",
   icons: {
     icon: [
       {
@@ -111,22 +113,21 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
+      localization={esMX}
       signUpFallbackRedirectUrl=""
       signInFallbackRedirectUrl=""
     >
-      <html lang="en">
+      <html lang="es">
         <head></head>
         <body
           className={`${helveticaNeue.variable} antialiased`}
-          style={{ fontFamily: 'var(--font-helvetica-neue)' }}
+          style={{ fontFamily: "var(--font-helvetica-neue)" }}
         >
           <CartProvider>
             <TableProvider>
               <GuestProvider>
                 <PaymentProvider>
-                  <UserDataProvider>
-                    {children}
-                  </UserDataProvider>
+                  <UserDataProvider>{children}</UserDataProvider>
                 </PaymentProvider>
               </GuestProvider>
             </TableProvider>

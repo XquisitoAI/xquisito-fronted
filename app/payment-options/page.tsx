@@ -331,9 +331,6 @@ export default function PaymentOptionsPage() {
                     </div>
                     <div className="flex-1 text-left">
                       <h3 className="text-black">Pagar cuenta completa</h3>
-                      <p className="text-sm text-gray-600">
-                        ${unpaidAmount.toFixed(2)} pendientes
-                      </p>
                     </div>
                     <div className="text-black">
                       <ChevronRight className="size-5" />
@@ -384,11 +381,12 @@ export default function PaymentOptionsPage() {
                     </div>
                     <div className="flex-1 text-left">
                       <h3 className="text-black">Dividir cuenta</h3>
-                      <p className="text-sm text-gray-600">
-                        {uniqueUsers.length === 1
-                          ? `$${unpaidAmount.toFixed(2)} (restante completo para ti)`
-                          : `$${(unpaidAmount / uniqueUsers.length).toFixed(2)} por persona (${uniqueUsers.length} personas pendientes)`}
-                      </p>
+                      {uniqueUsers.length > 1 && (
+                        <p className="text-sm text-gray-600">
+                          ${(unpaidAmount / uniqueUsers.length).toFixed(2)} por
+                          persona (${uniqueUsers.length} personas pendientes)
+                        </p>
+                      )}
                     </div>
                     <div className="text-black">
                       <ChevronRight className="size-5" />

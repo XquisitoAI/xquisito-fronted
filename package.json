@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/elements": "^0.23.62",
+    "@clerk/localizations": "^3.25.5",
     "@clerk/nextjs": "^6.31.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

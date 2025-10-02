@@ -66,12 +66,13 @@ export default function CardSelectionPage() {
   const { user, isLoaded } = useUser();
 
   const paymentType = searchParams.get("type") || "full-bill";
-  const totalAmountWithTip = parseFloat(searchParams.get("amount") || "0"); // Total con propina y comisión para eCardPay
+  const totalAmountWithTip = parseFloat(searchParams.get("amount") || "0"); // Total con propina, comisión e IVA para eCardPay
   const baseAmount = parseFloat(searchParams.get("baseAmount") || "0"); // Monto base sin propina ni comisión para BD
   const tipAmount = parseFloat(searchParams.get("tipAmount") || "0");
   const commissionAmount = parseFloat(
     searchParams.get("commissionAmount") || "0"
   );
+  const ivaAmount = parseFloat(searchParams.get("ivaAmount") || "0");
   const userName = searchParams.get("userName");
   const selectedItemsParam = searchParams.get("selectedItems");
 
@@ -83,7 +84,12 @@ export default function CardSelectionPage() {
   } = useEcartPay();
 
   // Determinar el nombre a usar: prioridad a userName de URL, luego state.currentUserName, luego nombre de usuario autenticado
-  const effectiveName = userName || state.currentUserName || (user?.fullName || user?.firstName) || "";
+  const effectiveName =
+    userName ||
+    state.currentUserName ||
+    user?.fullName ||
+    user?.firstName ||
+    "";
 
   const [name, setName] = useState(effectiveName);
   const [email, setEmail] = useState("");
@@ -107,10 +113,22 @@ export default function CardSelectionPage() {
 
   useEffect(() => {
     // Actualizar nombre cuando cambie effectiveName
-    const newName = userName || state.currentUserName || (user?.fullName || user?.firstName) || "";
+    const newName =
+      userName ||
+      state.currentUserName ||
+      user?.fullName ||
+      user?.firstName ||
+      "";
     if (newName && newName !== name) {
       setName(newName);
-      console.log("🔧 Updated name:", newName, "from userName:", userName, "state.currentUserName:", state.currentUserName);
+      console.log(
+        "🔧 Updated name:",
+        newName,
+        "from userName:",
+        userName,
+        "state.currentUserName:",
+        state.currentUserName
+      );
     }
 
     // Configurar usuarios seleccionados según el tipo de pago
@@ -292,10 +310,11 @@ export default function CardSelectionPage() {
         setIsProcessing(false);
 
         const queryParams = new URLSearchParams({
-          amount: totalAmountWithTip.toString(), // Total con propina y comisión para eCardPay
+          amount: totalAmountWithTip.toString(), // Total con propina, comisión e IVA para eCardPay
           baseAmount: baseAmount.toString(), // Monto base para BD
           tipAmount: tipAmount.toString(),
           commissionAmount: commissionAmount.toString(),
+          ivaAmount: ivaAmount.toString(),
           type: paymentType,
           ...(userName && { userName }),
         });
@@ -344,7 +363,7 @@ export default function CardSelectionPage() {
         paymentMethodId: paymentMethodToUse.id,
         amount: totalAmountWithTip,
         currency: "MXN",
-        description: `Xquisito Restaurant Payment - Table ${tableNumber || state.tableNumber || "N/A"}${userName ? ` - ${userName}` : ""} - Tip: $${tipAmount.toFixed(2)} - Commission: $${commissionAmount.toFixed(2)}`,
+        description: `Xquisito Restaurant Payment - Table ${tableNumber || state.tableNumber || "N/A"}${userName ? ` - ${userName}` : ""} - Tip: $${tipAmount.toFixed(2)} - Commission: $${commissionAmount.toFixed(2)} - IVA: $${ivaAmount.toFixed(2)}`,
         orderId: `order-${Date.now()}-attempt-${paymentAttempts + 1}`,
         tableNumber: tableNumber || state.tableNumber,
         restaurantId: "xquisito-main",
@@ -381,14 +400,15 @@ export default function CardSelectionPage() {
         if (typeof window !== "undefined") {
           const paymentData = {
             orderId: order?.id || payment?.id,
-            amount: baseAmount, // Monto base para BD (SIN propina ni comisión)
+            amount: baseAmount, // Monto base para BD (SIN propina, comisión ni IVA)
             paymentType,
             userName: userName || name,
             tableNumber: state.tableNumber,
             baseAmount,
             tipAmount,
             commissionAmount,
-            eCartPayAmount: totalAmountWithTip, // Total pagado en eCardPay (CON propina y comisión)
+            ivaAmount,
+            eCartPayAmount: totalAmountWithTip, // Total pagado en eCardPay (CON propina, comisión e IVA)
           };
 
           console.log("💾 Storing payment data in localStorage:", paymentData);
@@ -436,10 +456,11 @@ export default function CardSelectionPage() {
 
   const handleAddCard = () => {
     const queryParams = new URLSearchParams({
-      amount: totalAmountWithTip.toString(), // Total con propina y comisión para eCardPay
+      amount: totalAmountWithTip.toString(), // Total con propina, comisión e IVA para eCardPay
       baseAmount: baseAmount.toString(), // Monto base para BD
       tipAmount: tipAmount.toString(),
       commissionAmount: commissionAmount.toString(),
+      ivaAmount: ivaAmount.toString(),
       type: paymentType,
       ...(userName && { userName }),
     });
@@ -483,12 +504,13 @@ export default function CardSelectionPage() {
                 </span>
               </div>*/}
 
+              {/*
               <div className="flex justify-between items-center">
                 <span className="text-black font-medium">Total mesa</span>
                 <span className="text-black font-medium">
                   ${tableTotalPrice.toFixed(2)} MXN
                 </span>
-              </div>
+              </div>*/}
 
               {unpaidAmount < tableTotalPrice && (
                 <div className="flex justify-between items-center">
@@ -520,6 +542,15 @@ export default function CardSelectionPage() {
                   <span className="text-black font-medium">Comisión</span>
                   <span className="text-black font-medium">
                     ${commissionAmount.toFixed(2)} MXN
+                  </span>
+                </div>
+              )}
+
+              {ivaAmount > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-black font-medium">IVA</span>
+                  <span className="text-black font-medium">
+                    ${ivaAmount.toFixed(2)} MXN
                   </span>
                 </div>
               )}

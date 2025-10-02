@@ -8,6 +8,7 @@ import { useUserData } from "../../context/UserDataContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ScanFace, Mail, KeyRound, User } from "lucide-react";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
+import { esMX } from "@clerk/localizations";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -48,7 +49,7 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col justify-center items-center px-4">
       <div className="relative z-10 w-full max-w-md text-center flex flex-col items-center">
-        <div className="mb-6">
+        <div className="mb-12">
           <img
             src="/logo-short-green.webp"
             alt="Xquisito Logo"
@@ -56,18 +57,25 @@ export default function SignUpPage() {
           />
         </div>
         <div className="w-full">
-          <SignUp.Root routing="virtual" path="/sign-up" afterSignUpUrl="">
+          <SignUp.Root
+            routing="virtual"
+            path="/sign-up"
+            afterSignUpUrl=""
+            localization={esMX}
+          >
             <SignUp.Step name="start">
+              {/*
               <div className="mb-6 text-center">
                 <h1 className="text-xl font-medium text-white mb-2">
                   Crea una cuenta de Xquisito
                 </h1>
               </div>
+              */}
 
               {/* Personal Information */}
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <Clerk.Field name="firstName" className="space-y-2">
+                  <Clerk.Field name="firstName" className="space-y-1">
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                       <Clerk.Input
@@ -79,7 +87,7 @@ export default function SignUpPage() {
                     <Clerk.FieldError className="text-rose-400 text-xs" />
                   </Clerk.Field>
 
-                  <Clerk.Field name="lastName" className="space-y-2">
+                  <Clerk.Field name="lastName" className="space-y-1">
                     <Clerk.Input
                       required
                       className="w-full px-3 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] focus:border-transparent"
@@ -89,7 +97,7 @@ export default function SignUpPage() {
                   </Clerk.Field>
                 </div>
 
-                <Clerk.Field name="emailAddress" className="space-y-2">
+                <Clerk.Field name="emailAddress" className="space-y-1">
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
                     <Clerk.Input
@@ -102,7 +110,7 @@ export default function SignUpPage() {
                   <Clerk.FieldError className="text-rose-400 text-xs" />
                 </Clerk.Field>
 
-                <Clerk.Field name="password" className="space-y-2 relative">
+                <Clerk.Field name="password" className="space-y-1 relative">
                   <div className="relative">
                     <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
                     <Clerk.Input
@@ -234,6 +242,26 @@ export default function SignUpPage() {
                     <path fill="#81bc06" d="M13 1h10v10H13z" />
                     <path fill="#05a6f0" d="M1 13h10v10H1z" />
                     <path fill="#ffba08" d="M13 13h10v10H13z" />
+                  </svg>
+                </Clerk.Connection>
+
+                <Clerk.Connection
+                  name="facebook"
+                  className="p-3 border border-white rounded-full hover:bg-white/10 transition-colors font-medium cursor-pointer"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="size-6"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="#1877F2"
+                      d="M24 12c0-6.627-5.373-12-12-12S0 5.373 0 12c0 5.99 4.388 10.954 10.125 11.854V15.47H7.078V12h3.047V9.356c0-3.007 1.792-4.668 4.533-4.668 1.312 0 2.686.234 2.686.234v2.953H15.83c-1.491 0-1.956.925-1.956 1.874V12h3.328l-.532 3.47h-2.796v8.385C19.612 22.954 24 17.99 24 12z"
+                    />
+                    <path
+                      fill="#fff"
+                      d="M16.671 15.47L17.203 12h-3.328V9.749c0-.949.465-1.874 1.956-1.874h1.513V4.922s-1.374-.234-2.686-.234c-2.741 0-4.533 1.66-4.533 4.668V12H7.078v3.47h3.047v8.385a12.09 12.09 0 003.75 0V15.47h2.796z"
+                    />
                   </svg>
                 </Clerk.Connection>
               </div>
