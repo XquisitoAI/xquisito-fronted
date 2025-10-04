@@ -9,7 +9,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-helvetica-neue);
-  --color-primary: #173E44;
+  --color-primary: #173e44;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,17 +22,21 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-helvetica-neue), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    var(--font-helvetica-neue),
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 }
 
 /* Ocultar scrollbar pero mantener funcionalidad de scroll */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
+  display: none; /* Chrome, Safari and Opera */
 }
 
 /* Fly to cart animation */
@@ -57,4 +61,26 @@ body {
 
 .cart-badge-animate {
   animation: shake-cart 0.3s ease forwards;
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.05);
+  }
+  75% {
+    transform: translateY(4px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s ease-out forwards;
 }

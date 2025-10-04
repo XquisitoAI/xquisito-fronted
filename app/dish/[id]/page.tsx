@@ -15,7 +15,9 @@ export default function DishDetailPage() {
   const router = useRouter();
   const dishId = parseInt(params.id as string);
   const { state, dispatch } = useTable();
-  const { tableNumber, goBack } = useTableNavigation();
+  const { tableNumber, goBack, navigateWithTable } = useTableNavigation();
+  const [localQuantity, setLocalQuantity] = useState(0);
+  const [isPulsing, setIsPulsing] = useState(false);
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
     ingredientes: false,
     extras: false,
@@ -77,15 +79,45 @@ export default function DishDetailPage() {
 
   const dishData = findDishById(dishId);
 
-  const handleAddToCart = () => {
-    if (dishData) {
-      dispatch({ type: "ADD_ITEM_TO_CURRENT_USER", payload: dishData.dish });
-    }
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!dishData) return;
+
+    // Update local quantity al instante
+    setLocalQuantity((prev) => prev + 1);
+
+    // Trigger pulse animation
+    setIsPulsing(true);
+
+    // Agregar al carrito
+    dispatch({ type: "ADD_ITEM_TO_CURRENT_USER", payload: dishData.dish });
+  };
+
+  const handleAddToCartAndReturn = () => {
+    if (!dishData) return;
+
+    // Update local quantity al instante
+    setLocalQuantity((prev) => prev + 1);
+
+    // Trigger pulse animation
+    setIsPulsing(true);
+
+    // Agregar al carrito
+    dispatch({ type: "ADD_ITEM_TO_CURRENT_USER", payload: dishData.dish });
+
+    // Regresar al menú después de un pequeño delay para que se vea la animación
+    setTimeout(() => {
+      navigateWithTable("/menu");
+    }, 200);
   };
 
   const handleRemoveFromCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!dishData) return;
+
+    // Update local quantity
+    setLocalQuantity((prev) => Math.max(0, prev - 1));
+
     const cartItem = state.currentUserItems.find(
       (cartItem) => cartItem.id === dishData.dish.id
     );
@@ -107,6 +139,17 @@ export default function DishDetailPage() {
         (cartItem) => cartItem.id === dishData.dish.id
       )?.quantity || 0
     : 0;
+
+  // Sync local quantity with state
+  const displayQuantity = Math.max(localQuantity, currentQuantity);
+
+  // Reset pulse animation
+  useEffect(() => {
+    if (isPulsing) {
+      const timer = setTimeout(() => setIsPulsing(false), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isPulsing]);
 
   if (!tableNumber || isNaN(parseInt(tableNumber))) {
     return (
@@ -280,22 +323,25 @@ export default function DishDetailPage() {
             <div className="flex gap-3 mt-6">
               {/* Botón de agregar al pedido */}
               <button
-                onClick={handleAddToCart}
+                onClick={handleAddToCartAndReturn}
                 className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full cursor-pointer transition-colors mb-6"
               >
                 Agregar al carrito
               </button>
 
-              <div className="flex gap-2.5 px-6 py-3 h-fit bg-[#f9f9f9] rounded-full border border-[#8e8e8e]/50 items-center justify-center">
+              <div
+                className={`flex gap-2.5 px-6 py-3 h-fit rounded-full border items-center justify-center border-[#8e8e8e]/50 text-black transition-all ${isPulsing ? "bg-[#eab3f4]/50" : "bg-[#f9f9f9]"}`}
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Minus
-                  className={`size-4 ${currentQuantity > 0 ? "cursor-pointer text-black" : "cursor-no-drop text-black"}`}
+                  className={`size-4 ${displayQuantity > 0 ? "cursor-pointer" : "cursor-no-drop"}`}
                   onClick={
-                    currentQuantity > 0 ? handleRemoveFromCart : undefined
+                    displayQuantity > 0 ? handleRemoveFromCart : undefined
                   }
                 />
-                <p className="text-black">{currentQuantity}</p>
+                <p className="font-normal">{displayQuantity}</p>
                 <Plus
-                  className="size-4 cursor-pointer text-black"
+                  className="size-4 cursor-pointer"
                   onClick={handleAddToCart}
                 />
               </div>
