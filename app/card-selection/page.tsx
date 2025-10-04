@@ -178,7 +178,7 @@ export default function CardSelectionPage() {
     paymentId: string,
     amount: number,
     paymentType: string
-  ) => {
+  ): Promise<void> => {
     try {
       setIsProcessing(true);
 
@@ -277,7 +277,7 @@ export default function CardSelectionPage() {
     }
   };
 
-  const handlePayment = async () => {
+  const handlePayment = async (): Promise<void> => {
     // Validar selección de tarjeta si hay métodos de pago disponibles
     if (hasPaymentMethods && !selectedPaymentMethodId) {
       alert("Por favor selecciona una tarjeta de pago");
@@ -446,15 +446,16 @@ export default function CardSelectionPage() {
       }
 
       throw new Error("Formato de respuesta de pago inesperado");
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido";
       console.error("Payment error:", error);
-      alert(`Error en el pago: ${error.message}`);
+      alert(`Error en el pago: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleAddCard = () => {
+  const handleAddCard = (): void => {
     const queryParams = new URLSearchParams({
       amount: totalAmountWithTip.toString(), // Total con propina, comisión e IVA para eCardPay
       baseAmount: baseAmount.toString(), // Monto base para BD
@@ -462,6 +463,7 @@ export default function CardSelectionPage() {
       commissionAmount: commissionAmount.toString(),
       ivaAmount: ivaAmount.toString(),
       type: paymentType,
+      scan: "true", // Auto-abrir scanner
       ...(userName && { userName }),
     });
 
