@@ -422,7 +422,17 @@ export default function TipSelectionPage() {
 
             {/* Tu parte */}
             <div className="flex justify-between items-center">
-              <span className="text-black font-medium">Tu parte:</span>
+              <span className="text-black font-medium">
+                {paymentType === "full-bill"
+                  ? "Total:"
+                  : paymentType === "select-items"
+                    ? "Tus artículos:"
+                    : paymentType === "equal-shares"
+                      ? "Tu parte:"
+                      : paymentType === "choose-amount"
+                        ? "Tu monto:"
+                        : "Tu parte:"}
+              </span>
               <span className="text-black font-medium">
                 ${baseAmount.toFixed(2)} MXN
               </span>
@@ -595,7 +605,17 @@ export default function TipSelectionPage() {
               </p>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-black font-medium">+ Tu parte</span>
+                  <span className="text-black font-medium">
+                    + {paymentType === "full-bill"
+                      ? "Total"
+                      : paymentType === "select-items"
+                        ? "Tus artículos"
+                        : paymentType === "equal-shares"
+                          ? "Tu parte"
+                          : paymentType === "choose-amount"
+                            ? "Tu monto"
+                            : "Tu parte"}
+                  </span>
                   <span className="text-black font-medium">
                     ${baseAmount.toFixed(2)} MXN
                   </span>

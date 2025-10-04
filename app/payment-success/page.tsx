@@ -199,9 +199,9 @@ export default function PaymentSuccessPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43]">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
       {/* Success Icon */}
-      <div className="flex justify-center pt-28 items-center">
+      <div className="flex-1 flex justify-center items-center">
         <img
           src="/logo-short-green.webp"
           alt="Xquisito Logo"
@@ -209,7 +209,7 @@ export default function PaymentSuccessPage() {
         />
       </div>
 
-      <div className="px-4 w-full fixed bottom-0 left-0 right-0">
+      <div className="px-4 w-full">
         <div className="flex-1 flex flex-col">
           <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
             <div className="py-6 px-8 flex flex-col justify-center items-center mb-6 mt-2 gap-2">

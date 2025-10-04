@@ -355,7 +355,7 @@ export default function PaymentOptionsPage() {
                       {/*<ListTodo className="text-black size-9" strokeWidth={1} />*/}
                     </div>
                     <div className="flex-1 text-left">
-                      <h3 className="text-black">Seleccionar alimentos</h3>
+                      <h3 className="text-black">Seleccionar artículos</h3>
                     </div>
                     <div className="text-black">
                       <ChevronRight className="size-5" />
