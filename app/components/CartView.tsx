@@ -66,13 +66,13 @@ export default function CartView() {
                 </div>
               ) : (
                 <div>
-                  <div className="text-black font-medium text-sm flex gap-10 justify-end translate-y-4">
+                  <div className="text-black font-medium text-sm flex gap-14 justify-end translate-y-4">
                     <span>Cant.</span>
                     <span>Precio</span>
                   </div>
                   <div className="divide-y divide-[#8e8e8e]/50">
-                    {state.currentUserItems.map((item) => (
-                      <div key={item.id} className="py-3">
+                    {state.currentUserItems.map((item, index) => (
+                      <div key={`${item.id}-${index}`} className="py-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="flex-shrink-0">
@@ -93,9 +93,26 @@ export default function CartView() {
                               </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-base text-black">
+                              <h3 className="text-base text-black capitalize">
                                 {item.name}
                               </h3>
+                              {item.customFields &&
+                                item.customFields.length > 0 && (
+                                  <div className="text-xs text-gray-400 space-y-0.5">
+                                    {item.customFields.map((field, idx) => (
+                                      <div key={idx}>
+                                        {field.selectedOptions
+                                          .filter((opt) => opt.price > 0)
+                                          .map((opt, optIdx) => (
+                                            <p key={optIdx}>
+                                              {opt.optionName} $
+                                              {opt.price.toFixed(2)}
+                                            </p>
+                                          ))}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                             </div>
                           </div>
                           <div className="text-right flex items-center justify-center gap-4">
@@ -107,6 +124,7 @@ export default function CartView() {
                                     payload: {
                                       id: item.id,
                                       quantity: item.quantity - 1,
+                                      customFields: item.customFields,
                                     },
                                   })
                                 }
@@ -122,15 +140,22 @@ export default function CartView() {
                                     payload: {
                                       id: item.id,
                                       quantity: item.quantity + 1,
+                                      customFields: item.customFields,
                                     },
                                   })
                                 }
                                 className="size-4 flex items-center justify-center text-black cursor-pointer"
                               />
                             </div>
-                            <p className="text-base text-black w-14">
-                              ${(item.price * item.quantity).toFixed(2)}
-                            </p>
+                            <div className="w-20 text-right">
+                              <p className="text-base text-black">
+                                $
+                                {(
+                                  (item.price + (item.extraPrice || 0)) *
+                                  item.quantity
+                                ).toFixed(2)}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>

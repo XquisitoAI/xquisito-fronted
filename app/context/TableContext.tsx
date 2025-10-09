@@ -16,6 +16,7 @@ import {
   SplitPayment,
 } from "../services/tableApi";
 import { useUser } from "@clerk/nextjs";
+import { useRestaurant } from "./RestaurantContext";
 
 // ===============================================
 // PREVIOUS IMPLEMENTATION (COMMENTED OUT)
@@ -51,6 +52,16 @@ interface TableState {
 // Interfaz para un item del carrito (mantiene la misma funcionalidad)
 export interface CartItem extends MenuItemData {
   quantity: number;
+  customFields?: {
+    fieldId: string;
+    fieldName: string;
+    selectedOptions: Array<{
+      optionId: string;
+      optionName: string;
+      price: number;
+    }>;
+  }[];
+  extraPrice?: number;
 }
 
 // Nuevo estado de la mesa basado en platillos
@@ -77,7 +88,11 @@ type TableAction =
   | { type: "REMOVE_ITEM_FROM_CURRENT_USER"; payload: number }
   | {
       type: "UPDATE_QUANTITY_CURRENT_USER";
-      payload: { id: number; quantity: number };
+      payload: {
+        id: number;
+        quantity: number;
+        customFields?: CartItem['customFields'];
+      };
     }
   | { type: "SET_CURRENT_USER_NAME"; payload: string }
   | { type: "SUBMIT_CURRENT_USER_ORDER" }
@@ -97,7 +112,11 @@ type TableAction =
   | { type: "REMOVE_ITEM_FROM_CURRENT_USER"; payload: number }
   | {
       type: "UPDATE_QUANTITY_CURRENT_USER";
-      payload: { id: number; quantity: number };
+      payload: {
+        id: number;
+        quantity: number;
+        customFields?: CartItem['customFields'];
+      };
     }
   | { type: "SET_CURRENT_USER_NAME"; payload: string }
   | { type: "CLEAR_CURRENT_USER_CART" }
@@ -161,11 +180,11 @@ const calculateTotals = (items: CartItem[]) => {
 };
 */
 
-// Función para calcular totales (mantiene la misma funcionalidad)
+// Función para calcular totales (incluye extraPrice)
 const calculateTotals = (items: CartItem[]) => {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + (item.price + (item.extraPrice || 0)) * item.quantity,
     0
   );
   return { totalItems, totalPrice };
@@ -180,16 +199,36 @@ function tableReducer(state: TableState, action: TableAction): TableState {
         tableNumber: action.payload,
       };
 
-    // Mantener la funcionalidad del carrito (sin cambios)
+    // Mantener la funcionalidad del carrito (con comparación de custom fields)
     case "ADD_ITEM_TO_CURRENT_USER": {
+      // Función helper para comparar custom fields
+      const areCustomFieldsEqual = (cf1?: CartItem['customFields'], cf2?: CartItem['customFields']) => {
+        if (!cf1 && !cf2) return true;
+        if (!cf1 || !cf2) return false;
+        if (cf1.length !== cf2.length) return false;
+
+        return cf1.every((field1, index) => {
+          const field2 = cf2[index];
+          if (field1.fieldId !== field2.fieldId) return false;
+          if (field1.selectedOptions.length !== field2.selectedOptions.length) return false;
+
+          return field1.selectedOptions.every((opt1, idx) => {
+            const opt2 = field2.selectedOptions[idx];
+            return opt1.optionId === opt2.optionId;
+          });
+        });
+      };
+
       const existingItem = state.currentUserItems.find(
-        (item) => item.id === action.payload.id
+        (item) =>
+          item.id === action.payload.id &&
+          areCustomFieldsEqual(item.customFields, action.payload.customFields)
       );
 
       let newItems: CartItem[];
       if (existingItem) {
         newItems = state.currentUserItems.map((item) =>
-          item.id === action.payload.id
+          item.id === action.payload.id && areCustomFieldsEqual(item.customFields, action.payload.customFields)
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -225,9 +264,28 @@ function tableReducer(state: TableState, action: TableAction): TableState {
     }
 
     case "UPDATE_QUANTITY_CURRENT_USER": {
+      // Función helper para comparar custom fields (reutilizada)
+      const areCustomFieldsEqual = (cf1?: CartItem['customFields'], cf2?: CartItem['customFields']) => {
+        if (!cf1 && !cf2) return true;
+        if (!cf1 || !cf2) return false;
+        if (cf1.length !== cf2.length) return false;
+
+        return cf1.every((field1, index) => {
+          const field2 = cf2[index];
+          if (field1.fieldId !== field2.fieldId) return false;
+          if (field1.selectedOptions.length !== field2.selectedOptions.length) return false;
+
+          return field1.selectedOptions.every((opt1, idx) => {
+            const opt2 = field2.selectedOptions[idx];
+            return opt1.optionId === opt2.optionId;
+          });
+        });
+      };
+
       const newItems = state.currentUserItems
         .map((item) =>
-          item.id === action.payload.id
+          item.id === action.payload.id &&
+          areCustomFieldsEqual(item.customFields, action.payload.customFields)
             ? { ...item, quantity: action.payload.quantity }
             : item
         )
@@ -398,6 +456,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
 export function TableProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(tableReducer, initialState);
   const { user, isLoaded } = useUser();
+  const { restaurantId } = useRestaurant();
 
   // Cargar todos los datos cuando se establece el número de mesa
   useEffect(() => {
@@ -631,7 +690,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
           item.quantity, // quantity real del carrito
           item.price, // price
           guestId, // guestId solo si es invitado
-          item.images
+          item.images,
+          item.customFields, // custom fields seleccionados
+          item.extraPrice, // precio extra por custom fields
+          restaurantId // restaurantId del contexto
         );
 
         if (!response.success) {

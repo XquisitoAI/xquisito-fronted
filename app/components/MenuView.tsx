@@ -2,14 +2,14 @@
 
 import MenuHeader from "./MenuHeader";
 import MenuCategory from "./MenuCategory";
-import { menuData } from "../utils/menuData";
-import { restaurantData } from "../utils/restaurantData";
 import { Search, ShoppingCart, Settings } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useUserData } from "../context/UserDataContext";
 import { useTableNavigation } from "../hooks/useTableNavigation";
 import { useTable } from "../context/TableContext";
+import { useRestaurant } from "../context/RestaurantContext";
+import Loader from "./Loader";
 
 interface MenuViewProps {
   tableNumber?: string;
@@ -17,12 +17,25 @@ interface MenuViewProps {
 
 export default function MenuView({ tableNumber }: MenuViewProps) {
   const [filter, setFilter] = useState("Todo");
+  const [searchQuery, setSearchQuery] = useState("");
   const { user, isLoaded } = useUser();
   const { signUpData } = useUserData();
   const { navigateWithTable } = useTableNavigation();
   const { state } = useTable();
+  const { restaurant, menu, loading, error } = useRestaurant();
 
-  const categorias = ["Todo", "Populares", "Desayunos", "Bebidas", "Extras"];
+  // Obtener categorías únicas del menú de la BD
+  const categorias = useMemo(() => {
+    const categories = ["Todo"];
+    if (menu && menu.length > 0) {
+      menu.forEach((section) => {
+        if (section.name) {
+          categories.push(section.name);
+        }
+      });
+    }
+    return categories;
+  }, [menu]);
 
   // Get gender Clerk
   const gender = signUpData?.gender || user?.unsafeMetadata?.gender;
@@ -38,15 +51,75 @@ export default function MenuView({ tableNumber }: MenuViewProps) {
     0
   );
 
+  // Filtrar menú según la categoría seleccionada y búsqueda
+  const filteredMenu = useMemo(() => {
+    let filtered = menu;
+
+    // Filtrar por categoría
+    if (filter !== "Todo") {
+      filtered = filtered.filter((section) => section.name === filter);
+    }
+
+    // Filtrar por búsqueda
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered
+        .map((section) => ({
+          ...section,
+          items: section.items.filter(
+            (item) =>
+              item.name.toLowerCase().includes(query) ||
+              item.description?.toLowerCase().includes(query)
+          ),
+        }))
+        .filter((section) => section.items.length > 0);
+    }
+
+    return filtered;
+  }, [menu, filter, searchQuery]);
+
+  // Mostrar loader mientras carga
+  if (loading) {
+    return <Loader />;
+  }
+
+  // Mostrar error si falla
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex items-center justify-center">
+        <div className="text-center px-6">
+          <h1 className="text-2xl font-bold text-white mb-2">Error</h1>
+          <p className="text-white">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar mensaje si no hay restaurante
+  if (!restaurant) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex items-center justify-center">
+        <div className="text-center px-6">
+          <h1 className="text-2xl font-bold text-white mb-2">
+            Restaurante no encontrado
+          </h1>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] relative">
+    <div className="min-h-screen bg-white relative">
       <img
-        src="https://w0.peakpx.com/wallpaper/531/501/HD-wallpaper-coffee-espresso-latte-art-cup-food.jpg"
+        src={
+          restaurant.banner_url ||
+          "https://w0.peakpx.com/wallpaper/531/501/HD-wallpaper-coffee-espresso-latte-art-cup-food.jpg"
+        }
         alt=""
         className="absolute top-0 left-0 w-full h-96 object-cover z-0"
       />
 
-      <MenuHeader restaurant={restaurantData} tableNumber={tableNumber} />
+      <MenuHeader restaurant={restaurant} tableNumber={tableNumber} />
 
       <main className="mt-72 relative z-10">
         <div className="bg-white rounded-t-4xl flex flex-col items-center px-6">
@@ -106,6 +179,8 @@ export default function MenuView({ tableNumber }: MenuViewProps) {
               <input
                 type="text"
                 placeholder="Buscar artículo"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full text-black px-3 py-2  focus:outline-none"
               />
             </div>
@@ -130,9 +205,19 @@ export default function MenuView({ tableNumber }: MenuViewProps) {
           </div>
 
           {/* Items */}
-          {menuData.map((category) => (
-            <MenuCategory key={category.id} category={category} />
-          ))}
+          {filteredMenu.length > 0 ? (
+            filteredMenu.map((section) => (
+              <MenuCategory key={section.id} section={section} />
+            ))
+          ) : (
+            <div className="text-center py-10">
+              <p className="text-gray-500">
+                {searchQuery.trim()
+                  ? `No se encontraron resultados para "${searchQuery}"`
+                  : "No hay items disponibles"}
+              </p>
+            </div>
+          )}
         </div>
       </main>
 

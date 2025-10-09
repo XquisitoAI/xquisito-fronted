@@ -42,30 +42,6 @@ export default function OrderStatus() {
     }
   };
 
-  const handleContinueAsGuest = () => {
-    try {
-      const tableNum = state.tableNumber?.toString() || undefined;
-      setAsGuest(tableNum);
-      setShowAuthModal(false);
-      navigateWithTable("/payment-options");
-    } catch (error) {
-      console.error("❌ Error initializing guest session:", error);
-      navigateWithTable("/payment-options");
-    }
-  };
-
-  const handleSignUp = () => {
-    saveUrlParams();
-    setShowAuthModal(false);
-    navigateWithTable("/sign-up");
-  };
-
-  const handleSignIn = () => {
-    saveUrlParams();
-    setShowAuthModal(false);
-    navigateWithTable("/sign-in");
-  };
-
   // Filtrar platillos pagados y no pagados
   const unpaidDishes = Array.isArray(state.dishOrders)
     ? state.dishOrders.filter((dish) => dish.payment_status === "not_paid")
@@ -279,6 +255,34 @@ export default function OrderStatus() {
                                       <h4 className="text-base text-black">
                                         {dish.item}
                                       </h4>
+                                      {dish.custom_fields &&
+                                        dish.custom_fields.length > 0 && (
+                                          <div className="text-xs text-gray-400 space-y-0.5">
+                                            {dish.custom_fields.map(
+                                              (field: any, idx: number) => (
+                                                <div key={idx}>
+                                                  {field.selectedOptions
+                                                    .filter(
+                                                      (opt: any) =>
+                                                        opt.price > 0
+                                                    )
+                                                    .map(
+                                                      (
+                                                        opt: any,
+                                                        optIdx: number
+                                                      ) => (
+                                                        <p key={optIdx}>
+                                                          {opt.optionName} $
+                                                          {opt.price.toFixed(2)}
+                                                        </p>
+                                                      )
+                                                    )}
+                                                </div>
+                                              )
+                                            )}
+                                          </div>
+                                        )}
+                                      {/*
                                       <div className="mt-1">
                                         <div className="space-y-1">
                                           <p className="text-xs text-[#8e8e8e]">
@@ -296,7 +300,7 @@ export default function OrderStatus() {
                                             </span>
                                           </p>
                                         </div>
-                                      </div>
+                                      </div>*/}
                                     </div>
                                   </div>
                                   <div className="text-right flex gap-10">
@@ -375,6 +379,33 @@ export default function OrderStatus() {
                                       <h4 className="text-base text-black">
                                         {dish.item}
                                       </h4>
+                                      {dish.custom_fields &&
+                                        dish.custom_fields.length > 0 && (
+                                          <div className="text-xs text-gray-400 space-y-0.5">
+                                            {dish.custom_fields.map(
+                                              (field: any, idx: number) => (
+                                                <div key={idx}>
+                                                  {field.selectedOptions
+                                                    .filter(
+                                                      (opt: any) =>
+                                                        opt.price > 0
+                                                    )
+                                                    .map(
+                                                      (
+                                                        opt: any,
+                                                        optIdx: number
+                                                      ) => (
+                                                        <p key={optIdx}>
+                                                          {opt.optionName} $
+                                                          {opt.price.toFixed(2)}
+                                                        </p>
+                                                      )
+                                                    )}
+                                                </div>
+                                              )
+                                            )}
+                                          </div>
+                                        )}
                                       <div className="mt-1 flex items-center gap-2">
                                         <p className="text-xs text-teal-600">
                                           ✓ PAGADO

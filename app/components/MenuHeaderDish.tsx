@@ -1,15 +1,10 @@
 "use client";
 
-import { Restaurant } from "../interfaces/restaurante";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import GlassSurface from "@/app/components/UI/GlassSurface";
 
-interface MenuHeaderProps {
-  restaurant: Restaurant;
-}
-
-export default function MenuHeaderDish({ restaurant }: MenuHeaderProps) {
+export default function MenuHeaderDish() {
   const router = useRouter();
 
   const handleBack = () => {

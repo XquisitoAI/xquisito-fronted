@@ -83,6 +83,18 @@ export default function DishDetailPage() {
     e?.stopPropagation();
     if (!dishData) return;
 
+    // Calcular precio con descuento aplicado
+    const finalPrice =
+      dishData.dish.discount > 0
+        ? dishData.dish.price * (1 - dishData.dish.discount / 100)
+        : dishData.dish.price;
+
+    // Crear item con precio con descuento
+    const itemWithDiscount = {
+      ...dishData.dish,
+      price: finalPrice,
+    };
+
     // Update local quantity al instante
     setLocalQuantity((prev) => prev + 1);
 
@@ -90,12 +102,24 @@ export default function DishDetailPage() {
     setIsPulsing(true);
 
     // Agregar al carrito
-    dispatch({ type: "ADD_ITEM_TO_CURRENT_USER", payload: dishData.dish });
+    dispatch({ type: "ADD_ITEM_TO_CURRENT_USER", payload: itemWithDiscount });
   };
 
   const handleAddToCartAndReturn = () => {
     if (!dishData) return;
 
+    // Calcular precio con descuento aplicado
+    const finalPrice =
+      dishData.dish.discount > 0
+        ? dishData.dish.price * (1 - dishData.dish.discount / 100)
+        : dishData.dish.price;
+
+    // Crear item con precio con descuento
+    const itemWithDiscount = {
+      ...dishData.dish,
+      price: finalPrice,
+    };
+
     // Update local quantity al instante
     setLocalQuantity((prev) => prev + 1);
 
@@ -103,7 +127,7 @@ export default function DishDetailPage() {
     setIsPulsing(true);
 
     // Agregar al carrito
-    dispatch({ type: "ADD_ITEM_TO_CURRENT_USER", payload: dishData.dish });
+    dispatch({ type: "ADD_ITEM_TO_CURRENT_USER", payload: itemWithDiscount });
 
     // Regresar al menú después de un pequeño delay para que se vea la animación
     setTimeout(() => {
@@ -223,7 +247,7 @@ export default function DishDetailPage() {
         </div>
       </div>
 
-      <MenuHeaderDish restaurant={restaurantData} />
+      <MenuHeaderDish />
 
       <main className="mt-72 relative z-10">
         {/* Contenido principal */}

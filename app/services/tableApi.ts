@@ -78,6 +78,8 @@ export interface DishOrder {
   guest_name: string;
   table_order_id: string;
   images: string[];
+  custom_fields?: any;
+  extra_price?: number;
 }
 
 export interface TableSummary {

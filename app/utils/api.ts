@@ -30,8 +30,6 @@ export interface AddPaymentMethodRequest {
   cardNumber: string;
   expDate: string;
   cvv: string;
-  country: string;
-  postalCode: string;
 }
 
 class ApiService {
@@ -267,7 +265,18 @@ class ApiService {
     quantity: number,
     price: number,
     guestId?: string | null,
-    images: string[] = []
+    images: string[] = [],
+    customFields?: Array<{
+      fieldId: string;
+      fieldName: string;
+      selectedOptions: Array<{
+        optionId: string;
+        optionName: string;
+        price: number;
+      }>;
+    }>,
+    extraPrice?: number,
+    restaurantId?: number | null
   ): Promise<ApiResponse<any>> {
     return this.makeRequest(`/tables/${tableNumber}/dishes`, {
       method: "POST",
@@ -279,6 +288,9 @@ class ApiService {
         price,
         guestId,
         images,
+        customFields,
+        extraPrice,
+        restaurantId,
       }),
     });
   }
