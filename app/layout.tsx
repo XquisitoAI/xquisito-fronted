@@ -6,6 +6,7 @@ import { TableProvider } from "./context/TableContext";
 import { GuestProvider } from "./context/GuestContext";
 import { PaymentProvider } from "./context/PaymentContext";
 import { UserDataProvider } from "./context/UserDataContext";
+import { RestaurantProvider } from "./context/RestaurantContext";
 import { ClerkProvider } from "@clerk/nextjs";
 import { esMX } from "@clerk/localizations";
 
@@ -123,15 +124,17 @@ export default function RootLayout({
           className={`${helveticaNeue.variable} antialiased`}
           style={{ fontFamily: "var(--font-helvetica-neue)" }}
         >
-          <CartProvider>
-            <TableProvider>
-              <GuestProvider>
-                <PaymentProvider>
-                  <UserDataProvider>{children}</UserDataProvider>
-                </PaymentProvider>
-              </GuestProvider>
-            </TableProvider>
-          </CartProvider>
+          <RestaurantProvider>
+            <CartProvider>
+              <TableProvider>
+                <GuestProvider>
+                  <PaymentProvider>
+                    <UserDataProvider>{children}</UserDataProvider>
+                  </PaymentProvider>
+                </GuestProvider>
+              </TableProvider>
+            </CartProvider>
+          </RestaurantProvider>
         </body>
       </html>
     </ClerkProvider>
