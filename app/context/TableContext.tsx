@@ -115,7 +115,7 @@ type TableAction =
       payload: {
         id: number;
         quantity: number;
-        customFields?: CartItem['customFields'];
+        customFields?: CartItem["customFields"];
       };
     }
   | { type: "SET_CURRENT_USER_NAME"; payload: string }
@@ -202,7 +202,10 @@ function tableReducer(state: TableState, action: TableAction): TableState {
     // Mantener la funcionalidad del carrito (con comparación de custom fields)
     case "ADD_ITEM_TO_CURRENT_USER": {
       // Función helper para comparar custom fields
-      const areCustomFieldsEqual = (cf1?: CartItem['customFields'], cf2?: CartItem['customFields']) => {
+      const areCustomFieldsEqual = (
+        cf1?: CartItem["customFields"],
+        cf2?: CartItem["customFields"]
+      ) => {
         if (!cf1 && !cf2) return true;
         if (!cf1 || !cf2) return false;
         if (cf1.length !== cf2.length) return false;
@@ -210,7 +213,8 @@ function tableReducer(state: TableState, action: TableAction): TableState {
         return cf1.every((field1, index) => {
           const field2 = cf2[index];
           if (field1.fieldId !== field2.fieldId) return false;
-          if (field1.selectedOptions.length !== field2.selectedOptions.length) return false;
+          if (field1.selectedOptions.length !== field2.selectedOptions.length)
+            return false;
 
           return field1.selectedOptions.every((opt1, idx) => {
             const opt2 = field2.selectedOptions[idx];
@@ -228,7 +232,8 @@ function tableReducer(state: TableState, action: TableAction): TableState {
       let newItems: CartItem[];
       if (existingItem) {
         newItems = state.currentUserItems.map((item) =>
-          item.id === action.payload.id && areCustomFieldsEqual(item.customFields, action.payload.customFields)
+          item.id === action.payload.id &&
+          areCustomFieldsEqual(item.customFields, action.payload.customFields)
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -265,7 +270,10 @@ function tableReducer(state: TableState, action: TableAction): TableState {
 
     case "UPDATE_QUANTITY_CURRENT_USER": {
       // Función helper para comparar custom fields (reutilizada)
-      const areCustomFieldsEqual = (cf1?: CartItem['customFields'], cf2?: CartItem['customFields']) => {
+      const areCustomFieldsEqual = (
+        cf1?: CartItem["customFields"],
+        cf2?: CartItem["customFields"]
+      ) => {
         if (!cf1 && !cf2) return true;
         if (!cf1 || !cf2) return false;
         if (cf1.length !== cf2.length) return false;
@@ -273,7 +281,8 @@ function tableReducer(state: TableState, action: TableAction): TableState {
         return cf1.every((field1, index) => {
           const field2 = cf2[index];
           if (field1.fieldId !== field2.fieldId) return false;
-          if (field1.selectedOptions.length !== field2.selectedOptions.length) return false;
+          if (field1.selectedOptions.length !== field2.selectedOptions.length)
+            return false;
 
           return field1.selectedOptions.every((opt1, idx) => {
             const opt2 = field2.selectedOptions[idx];
@@ -593,20 +602,38 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
         if (activeUsersResponse.success && activeUsersResponse.data?.data) {
           const activeUsers = activeUsersResponse.data.data;
-          const activeUserNames = activeUsers
-            .map((user: any) => user.guest_name)
-            .filter(Boolean);
 
-          if (activeUserNames.length > 0) {
-            // Recalcular split bill con los active users
+          const formattedUsers = activeUsers.map((user: any) => ({
+            userId: user.user_id ?? null, // si no tiene user_id, queda null
+            guestName: user.guest_name ?? null,
+          }));
+
+          const userIds = formattedUsers.map((u: any) => u.userId);
+          const guestNames = formattedUsers.map((u: any) => u.guestName);
+
+          const totalUsers = formattedUsers.length;
+
+          // Separar usuarios autenticados de invitados
+          /*const activeUserIds = activeUsers
+            .filter((user: any) => user.user_id)
+            .map((user: any) => user.user_id);
+
+          const activeGuestNames = activeUsers
+            .filter((user: any) => !user.user_id && user.guest_name)
+            .map((user: any) => user.guest_name);
+
+          const totalUsers = activeUserIds.length + activeGuestNames.length;
+*/
+          if (totalUsers > 0) {
+            // Recalcular split bill con los active users (tanto autenticados como invitados)
             await initializeSplitBill(
-              activeUserNames.length,
-              undefined,
-              activeUserNames
+              totalUsers,
+              userIds.length > 0 ? userIds : undefined,
+              guestNames.length > 0 ? guestNames : undefined
             );
             console.log(
-              `🔄 Split bill recalculated with ${activeUserNames.length} active users:`,
-              activeUserNames
+              `🔄 Split bill recalculated with ${totalUsers} active users:`,
+              { userIds: userIds, guestNames: guestNames }
             );
 
             // Recargar tableSummary después del recálculo
@@ -621,19 +648,36 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
         if (activeUsersResponse.success && activeUsersResponse.data?.data) {
           const activeUsers = activeUsersResponse.data.data;
-          const activeUserNames = activeUsers
-            .map((user: any) => user.guest_name)
-            .filter(Boolean);
 
-          if (activeUserNames.length > 1) {
+          const formattedUsers = activeUsers.map((user: any) => ({
+            userId: user.user_id ?? null, // si no tiene user_id, queda null
+            guestName: user.guest_name ?? null,
+          }));
+
+          const userIds = formattedUsers.map((u: any) => u.userId);
+          const guestNames = formattedUsers.map((u: any) => u.guestName);
+
+          const totalUsers = formattedUsers.length;
+          // Separar usuarios autenticados de invitados
+          /*const activeUserIds = activeUsers
+            .filter((user: any) => user.user_id)
+            .map((user: any) => user.user_id);
+
+          const activeGuestNames = activeUsers
+            .filter((user: any) => !user.user_id && user.guest_name)
+            .map((user: any) => user.guest_name);
+
+          const totalUsers = activeUserIds.length + activeGuestNames.length;*/
+
+          if (totalUsers > 1) {
             await initializeSplitBill(
-              activeUserNames.length,
-              undefined,
-              activeUserNames
+              totalUsers,
+              userIds.length > 0 ? userIds : undefined,
+              guestNames.length > 0 ? guestNames : undefined
             );
             console.log(
-              `✅ Split bill auto-initialized with ${activeUserNames.length} active users:`,
-              activeUserNames
+              `✅ Split bill auto-initialized with ${totalUsers} active users:`,
+              { userIds: userIds, guestNames: guestNames }
             );
 
             // Recargar tableSummary después de la inicialización
@@ -757,15 +801,39 @@ export function TableProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const payTableAmount = async (amount: number) => {
+  const payTableAmount = async (
+    amount: number,
+    userId?: string,
+    guestName?: string
+  ) => {
     if (!state.tableNumber) return;
 
     dispatch({ type: "SET_LOADING", payload: true });
 
     try {
+      // Si no se proporciona userId o guestName, usar el usuario actual
+      let finalUserId = userId;
+      let finalGuestName = guestName;
+
+      if (!finalUserId && !finalGuestName) {
+        // Determinar si el usuario está autenticado
+        const isAuthenticated = isLoaded && user;
+
+        if (isAuthenticated) {
+          finalUserId = user.id;
+          finalGuestName =
+            user.fullName || user.firstName || state.currentUserName;
+        } else {
+          // Usuario invitado
+          finalGuestName = state.currentUserName;
+        }
+      }
+
       const response = await apiService.payTableAmount(
         state.tableNumber,
-        amount
+        amount,
+        finalUserId,
+        finalGuestName
       );
 
       if (response.success) {
@@ -796,11 +864,40 @@ export function TableProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SET_LOADING", payload: true });
 
     try {
+      // Si no se proporcionan userIds o guestNames, obtenerlos de activeUsers
+      let finalUserIds = userIds;
+      let finalGuestNames = guestNames;
+
+      if (!userIds && !guestNames) {
+        // Obtener active users de la mesa
+        const activeUsersResponse = await apiService.getActiveUsers(
+          state.tableNumber
+        );
+
+        if (activeUsersResponse.success && activeUsersResponse.data?.data) {
+          const activeUsers = activeUsersResponse.data;
+
+          // Separar usuarios autenticados (con user_id) de invitados (con guest_name)
+          finalUserIds = activeUsers
+            .filter((user: any) => user.user_id)
+            .map((user: any) => user.user_id);
+
+          finalGuestNames = activeUsers
+            .filter((user: any) => !user.user_id && user.guest_name)
+            .map((user: any) => user.guest_name);
+
+          console.log("🔍 Auto-detected active users for split:", {
+            userIds: finalUserIds,
+            guestNames: finalGuestNames,
+          });
+        }
+      }
+
       const response = await apiService.initializeSplitBill(
         state.tableNumber,
         numberOfPeople,
-        userIds,
-        guestNames
+        finalUserIds,
+        finalGuestNames
       );
 
       if (response.success) {

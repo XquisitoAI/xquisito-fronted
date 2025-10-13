@@ -315,9 +315,13 @@ class ApiService {
   /**
    * Pay for a specific dish order
    */
-  async payDishOrder(dishId: string): Promise<ApiResponse<any>> {
+  async payDishOrder(
+    dishId: string,
+    paymentMethodId?: string | null
+  ): Promise<ApiResponse<any>> {
     return this.makeRequest(`/dishes/${dishId}/pay`, {
       method: "POST",
+      body: JSON.stringify({ paymentMethodId }),
     });
   }
 
@@ -326,11 +330,20 @@ class ApiService {
    */
   async payTableAmount(
     tableNumber: string,
-    amount: number
+    amount: number,
+    userId?: string | null,
+    guestName?: string | null,
+    paymentMethodId?: string | null
   ): Promise<ApiResponse<any>> {
     return this.makeRequest(`/tables/${tableNumber}/pay`, {
       method: "POST",
-      body: JSON.stringify({ amount }),
+      body: JSON.stringify({
+        tableNumber,
+        amount,
+        userId,
+        guestName,
+        paymentMethodId,
+      }),
     });
   }
 
@@ -363,13 +376,16 @@ class ApiService {
   async paySplitAmount(
     tableNumber: string,
     userId?: string | null,
-    guestName?: string | null
+    guestName?: string | null,
+    paymentMethodId?: string | null
   ): Promise<ApiResponse<any>> {
     return this.makeRequest(`/tables/${tableNumber}/pay-split`, {
       method: "POST",
       body: JSON.stringify({
+        tableNumber,
         userId,
         guestName,
+        paymentMethodId,
       }),
     });
   }

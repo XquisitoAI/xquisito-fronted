@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
   Loader2,
@@ -10,6 +10,46 @@ import {
   CreditCard,
   Utensils,
 } from "lucide-react";
+import {
+  Amex,
+  Discover,
+  Mastercard,
+  Visa,
+} from "react-payment-logos/dist/logo";
+
+function getCardIcon(cardType: string): JSX.Element {
+  const type = cardType.toLowerCase();
+
+  switch (type) {
+    case "visa":
+      return <Visa style={{ width: "45px", height: "28px" }} />;
+    case "mastercard":
+      return <Mastercard style={{ width: "45px", height: "28px" }} />;
+    case "amex":
+      return <Amex style={{ width: "45px", height: "28px" }} />;
+    case "discover":
+      return <Discover style={{ width: "45px", height: "28px" }} />;
+    default:
+      return (
+        <div
+          style={{
+            width: "45px",
+            height: "28px",
+            background: "linear-gradient(to right, #3b82f6, #a855f7)",
+            borderRadius: "4px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            fontSize: "10px",
+            fontWeight: "bold",
+          }}
+        >
+          💳
+        </div>
+      );
+  }
+}
 
 interface OrderHistoryItem {
   dishOrderId: number;
@@ -30,6 +70,10 @@ interface OrderHistoryItem {
   restaurantId: number | null;
   restaurantName: string;
   restaurantLogo: string | null;
+  // Payment method info
+  paymentMethodId?: number | null;
+  paymentCardLastFour?: string | null;
+  paymentCardType?: string | null;
 }
 
 export default function HistoryTab() {
@@ -39,6 +83,19 @@ export default function HistoryTab() {
   const [error, setError] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<any>(null);
+
+  // Bloquear scroll cuando el modal está abierto
+  useEffect(() => {
+    if (selectedOrderDetails) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [selectedOrderDetails]);
 
   useEffect(() => {
     const fetchOrderHistory = async () => {
@@ -197,14 +254,14 @@ export default function HistoryTab() {
       {/* Modal */}
       {selectedOrderDetails && (
         <div
-          className="fixed inset-0 bg-black/30 bg-opacity-50 z-999 flex items-center justify-center p-6"
+          className="fixed inset-0 bg-black/25 backdrop-blur-xs bg-opacity-50 z-999 flex items-center justify-center"
           onClick={() => {
             setSelectedOrderId(null);
             setSelectedOrderDetails(null);
           }}
         >
           <div
-            className="bg-white min-w-[90vw]  rounded-4xl overflow-y-auto z-999"
+            className="bg-white w-full mx-4 rounded-4xl overflow-y-auto z-999"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-full flex justify-end">
@@ -213,7 +270,7 @@ export default function HistoryTab() {
                   setSelectedOrderId(null);
                   setSelectedOrderDetails(null);
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors justify-end flex items-end mt-3 mr-3"
+                className="p-2 hover:bg-gray-100 rounded-full cursor-pointer transition-colors justify-end flex items-end mt-3 mr-3"
               >
                 <X className="w-6 h-6 text-gray-600" />
               </button>
@@ -275,7 +332,7 @@ export default function HistoryTab() {
                   <div className="flex items-center gap-2 text-gray-700">
                     <CreditCard className="w-4 h-4 text-gray-700" />
                     <span
-                      className={`text-xs px-1 py-0.5 rounded-full ${
+                      className={`text-xs px-2 py-0.5 rounded-full ${
                         selectedOrderDetails.tableOrderStatus === "paid"
                           ? "bg-green-100 text-green-700"
                           : "bg-yellow-100 text-yellow-700"
@@ -286,13 +343,24 @@ export default function HistoryTab() {
                         : "Pendiente"}
                     </span>
                   </div>
+                  {selectedOrderDetails.orders[0]?.paymentCardType && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      {getCardIcon(
+                        selectedOrderDetails.orders[0].paymentCardType
+                      )}
+                      <span className="text-sm">
+                        •••• •••• ••••{" "}
+                        {selectedOrderDetails.orders[0].paymentCardLastFour}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Lista de platillos */}
               <div>
                 <h3 className="font-semibold text-black mb-3 mt-6 pt-4 border-t border-[#8e8e8e]">
-                  Platillos Ordenados ({selectedOrderDetails.orders.length})
+                  Platillos Ordenados:
                 </h3>
                 <div className="space-y-3 divide-y divide-[#8e8e8e]/50">
                   {selectedOrderDetails.orders.map((dish: OrderHistoryItem) => (
@@ -301,6 +369,7 @@ export default function HistoryTab() {
                       className="flex items-start gap-3 pt-3 first:pt-0 pb-3"
                     >
                       {/* Dish Image */}
+                      {/*
                       {dish.images && dish.images.length > 0 ? (
                         <img
                           src={dish.images[0]}
@@ -312,6 +381,7 @@ export default function HistoryTab() {
                           <span className="text-2xl">🍽️</span>
                         </div>
                       )}
+                      */}
 
                       {/* Dish Info */}
                       <div className="flex-1">
@@ -322,7 +392,7 @@ export default function HistoryTab() {
                           Cantidad: {dish.quantity}
                         </p>
                         <p className="text-xs text-gray-600">
-                          Precio unitario: ${dish.price.toFixed(2)} MXN
+                          ${dish.price.toFixed(2)} MXN
                         </p>
                         {dish.extraPrice > 0 && (
                           <p className="text-xs text-gray-600">
@@ -331,6 +401,7 @@ export default function HistoryTab() {
                         )}
 
                         {/* Custom Fields */}
+                        {/*
                         {dish.customFields && dish.customFields.length > 0 && (
                           <div className="mt-2 space-y-1">
                             {dish.customFields.map(
@@ -349,7 +420,7 @@ export default function HistoryTab() {
                               )
                             )}
                           </div>
-                        )}
+                        )}*/}
                       </div>
 
                       {/* Total Price */}
