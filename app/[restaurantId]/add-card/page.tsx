@@ -36,9 +36,15 @@ export default function AddCardPage() {
   const restaurantData = getRestaurantData();
   const isGuest = useIsGuest();
   const { guestId, tableNumber } = useGuest();
-  const { addPaymentMethod, refreshPaymentMethods } = usePayment();
+  const { addPaymentMethod, refreshPaymentMethods, paymentMethods } =
+    usePayment();
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
+
+  // Refresh payment methods on mount to ensure we have the latest data
+  useEffect(() => {
+    refreshPaymentMethods();
+  }, []);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -104,6 +110,20 @@ export default function AddCardPage() {
     }
     if (!cvv.trim()) {
       alert("Please enter CVV");
+      return;
+    }
+
+    // Validar tarjeta repetida
+    const lastFourDigits = cardNumber
+      .replace(/\s+/g, "")
+      .slice(-4)
+      .substring(0, 3);
+    const isDuplicate = paymentMethods.some(
+      (method) => method.lastFourDigits === lastFourDigits
+    );
+
+    if (isDuplicate) {
+      alert(`Ya existe una tarjeta terminada en ${lastFourDigits}`);
       return;
     }
 
@@ -215,7 +235,6 @@ export default function AddCardPage() {
       setCvv(value.substring(0, 4)); // Máximo 4 dígitos
     }
   };
-
 
   const handleScanSuccess = (result: {
     cardNumber: string;

@@ -19,7 +19,7 @@ import {
   Amex,
   Discover,
 } from "react-payment-logos/dist/logo";
-import { Plus } from "lucide-react";
+import { Plus, Trash2, LoaderIcon } from "lucide-react";
 
 // Utility function to get card type icon
 function getCardTypeIcon(cardType: string): JSX.Element {
@@ -73,7 +73,8 @@ export default function CardSelectionPage() {
   const restaurantData = getRestaurantData();
   const isGuest = useIsGuest();
   const { guestId, tableNumber, setAsAuthenticated } = useGuest();
-  const { hasPaymentMethods, paymentMethods } = usePayment();
+  const { hasPaymentMethods, paymentMethods, deletePaymentMethod } =
+    usePayment();
   const { user, isLoaded } = useUser();
 
   const paymentType = searchParams.get("type") || "full-bill";
@@ -115,6 +116,7 @@ export default function CardSelectionPage() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -206,7 +208,7 @@ export default function CardSelectionPage() {
 
         for (const dish of userDishes) {
           try {
-            await apiService.payDishOrder(dish.dish_order_id);
+            await apiService.payDishOrder(dish.dish_order_id, selectedPaymentMethodId);
           } catch (error) {
             console.error(`Error paying dish ${dish.dish_order_id}:`, error);
           }
@@ -215,7 +217,7 @@ export default function CardSelectionPage() {
         // Pagar solo los platillos seleccionados específicamente
         for (const dishId of selectedItems) {
           try {
-            await apiService.payDishOrder(dishId);
+            await apiService.payDishOrder(dishId, selectedPaymentMethodId);
           } catch (error) {
             console.error(`Error paying selected dish ${dishId}:`, error);
           }
@@ -224,12 +226,18 @@ export default function CardSelectionPage() {
         // Para división equitativa, usar paySplitAmount para rastrear qué usuario pagó
         try {
           if (user && user.id) {
-            await apiService.paySplitAmount(state.tableNumber, user.id);
+            await apiService.paySplitAmount(
+              state.tableNumber,
+              user.id,
+              null,
+              selectedPaymentMethodId
+            );
           } else if (isGuest && name.trim()) {
             await apiService.paySplitAmount(
               state.tableNumber,
               null,
-              name.trim()
+              name.trim(),
+              selectedPaymentMethodId
             );
           }
         } catch (error) {
@@ -241,7 +249,24 @@ export default function CardSelectionPage() {
       ) {
         // Para cuenta completa o monto personalizado, usar el monto exacto
         try {
-          await apiService.payTableAmount(state.tableNumber, baseAmount);
+          if (user && user.id) {
+            await apiService.payTableAmount(
+              state.tableNumber,
+              baseAmount,
+              user.id,
+              null,
+              selectedPaymentMethodId
+            );
+            console.log("hollaaaaaaaaaaa");
+          } else {
+            await apiService.payTableAmount(
+              state.tableNumber,
+              baseAmount,
+              null,
+              name.trim(),
+              selectedPaymentMethodId
+            );
+          }
         } catch (error) {
           console.error("Error paying table amount:", error);
         }
@@ -259,6 +284,12 @@ export default function CardSelectionPage() {
           paymentType,
           userName: userName || name,
           tableNumber: state.tableNumber,
+          dishOrders: dishOrders, // Todos los dish orders de la mesa
+          tableSummary: state.tableSummary, // Resumen completo de la mesa
+          tipAmount,
+          commissionAmount,
+          ivaAmount,
+          baseAmount,
           dishCount:
             paymentType === "user-items"
               ? dishOrders.filter((d) => d.guest_name === userName).length
@@ -415,6 +446,8 @@ export default function CardSelectionPage() {
             paymentType,
             userName: userName || name,
             tableNumber: state.tableNumber,
+            dishOrders: dishOrders, // Todos los dish orders de la mesa
+            tableSummary: state.tableSummary, // Resumen completo de la mesa
             baseAmount,
             tipAmount,
             commissionAmount,
@@ -480,6 +513,21 @@ export default function CardSelectionPage() {
     });
 
     navigateWithTable(`/add-card?${queryParams.toString()}`);
+  };
+
+  const handleDeleteCard = async (paymentMethodId: string) => {
+    if (!confirm("¿Estás seguro de que quieres eliminar esta tarjeta?")) {
+      return;
+    }
+
+    setDeletingCardId(paymentMethodId);
+    try {
+      await deletePaymentMethod(paymentMethodId);
+    } catch (error) {
+      alert("Error al eliminar la tarjeta. Intenta de nuevo.");
+    } finally {
+      setDeletingCardId(null);
+    }
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -618,14 +666,16 @@ export default function CardSelectionPage() {
                     {paymentMethods.map((method) => (
                       <div
                         key={method.id}
-                        onClick={() => setSelectedPaymentMethodId(method.id)}
-                        className={`flex items-center py-1.5 px-5 pl-10 border rounded-full cursor-pointer transition-colors ${
+                        className={`flex items-center py-1.5 px-5 pl-10 border rounded-full transition-colors ${
                           selectedPaymentMethodId === method.id
                             ? "border-teal-500 bg-teal-50"
                             : "border-black/50  bg-[#f9f9f9]"
                         }`}
                       >
-                        <div className="flex items-center justify-center gap-3 mx-auto">
+                        <div
+                          onClick={() => setSelectedPaymentMethodId(method.id)}
+                          className="flex items-center justify-center gap-3 mx-auto cursor-pointer"
+                        >
                           <div>{getCardTypeIcon(method.cardType)}</div>
                           <div>
                             <p className="text-black">
@@ -639,8 +689,10 @@ export default function CardSelectionPage() {
                             </span>
                           )}*/}
                         </div>
+
                         <div
-                          className={`w-4 h-4 rounded-full border-2 ml-auto ${
+                          onClick={() => setSelectedPaymentMethodId(method.id)}
+                          className={`w-4 h-4 rounded-full border-2 cursor-pointer ${
                             selectedPaymentMethodId === method.id
                               ? "border-teal-500 bg-teal-500"
                               : "border-gray-300"
@@ -650,6 +702,20 @@ export default function CardSelectionPage() {
                             <div className="w-full h-full rounded-full bg-white scale-50"></div>
                           )}
                         </div>
+
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => handleDeleteCard(method.id)}
+                          disabled={deletingCardId === method.id}
+                          className="pl-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50 cursor-pointer"
+                          title="Eliminar tarjeta"
+                        >
+                          {deletingCardId === method.id ? (
+                            <LoaderIcon className="size-5 animate-spin" />
+                          ) : (
+                            <Trash2 className="size-5" />
+                          )}
+                        </button>
                       </div>
                     ))}
                   </div>

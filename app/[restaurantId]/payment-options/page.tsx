@@ -16,6 +16,7 @@ import {
   ChevronRight,
   DollarSign,
   ListTodo,
+  Loader2,
   ReceiptText,
   Users,
 } from "lucide-react";
@@ -33,7 +34,7 @@ export default function PaymentOptionsPage() {
   }, [restaurantId, setRestaurantId]);
 
   const { user } = useUser();
-  const { state, loadTableData } = useTable();
+  const { state, loadTableData, loadActiveUsers } = useTable();
   const { navigateWithTable } = useTableNavigation();
   const router = useRouter();
   const restaurantData = getRestaurantData();
@@ -181,11 +182,34 @@ export default function PaymentOptionsPage() {
     return usersFromDishes;
   })();
 
-  // Para mostrar la opción de split, usar siempre los usuarios con platillos no pagados
-  // si no hay split activo, o los pendientes si ya hay split activo
-  const usersForSplitOption = Array.from(
-    new Set(unpaidDishes.map((dish) => dish.guest_name).filter(Boolean))
-  );
+  // Para mostrar la opción de split, usar usuarios con platillos no pagados
+  // pero excluir a los que ya pagaron (tienen registros en active_table_users con pagos > 0)
+  const usersForSplitOption = (() => {
+    const usersWithUnpaidDishes = Array.from(
+      new Set(unpaidDishes.map((dish) => dish.guest_name).filter(Boolean))
+    );
+
+    // Si tenemos activeUsers, filtrar los que ya pagaron completamente
+    if (state.activeUsers && state.activeUsers.length > 0) {
+      const usersPaid = state.activeUsers
+        .filter((user) => {
+          const totalPaid =
+            (user.total_paid_individual || 0) +
+            (user.total_paid_amount || 0) +
+            (user.total_paid_split || 0);
+          return totalPaid > 0;
+        })
+        .map((user) => user.guest_name)
+        .filter(Boolean);
+
+      // Excluir usuarios que ya pagaron
+      return usersWithUnpaidDishes.filter(
+        (userName) => !usersPaid.includes(userName)
+      );
+    }
+
+    return usersWithUnpaidDishes;
+  })();
 
   console.log("👥 Final user counts:");
   console.log("- uniqueUsers:", uniqueUsers, "length:", uniqueUsers.length);
@@ -252,7 +276,7 @@ export default function PaymentOptionsPage() {
       return;
     }
 
-    const numberOfPeople = uniqueUsers.length;
+    const numberOfPeople = usersForSplitOption.length;
     const splitAmount = numberOfPeople > 0 ? unpaidAmount / numberOfPeople : 0;
 
     const queryParams = new URLSearchParams({
@@ -301,7 +325,7 @@ export default function PaymentOptionsPage() {
   if (user && isSyncing) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col items-center justify-center">
-        <Loader className="size-12 text-white animate-spin" />
+        <Loader2 className="size-12 text-white animate-spin" />
         <p className="text-white mt-4">Configurando tu cuenta...</p>
       </div>
     );

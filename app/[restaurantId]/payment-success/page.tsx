@@ -10,6 +10,7 @@ import MenuHeader from "../../components/MenuHeader";
 import { getRestaurantData } from "../../utils/restaurantData";
 import { apiService } from "../../utils/api";
 import { useUser } from "@clerk/nextjs";
+import { Receipt, X, Calendar, CreditCard, Utensils } from "lucide-react";
 
 export default function PaymentSuccessPage() {
   const params = useParams();
@@ -41,6 +42,8 @@ export default function PaymentSuccessPage() {
   const [ordersMarkedAsPaid, setOrdersMarkedAsPaid] = useState(false);
   const [rating, setRating] = useState(0); // Rating de 1 a 5 (solo enteros)
   const [hoveredRating, setHoveredRating] = useState(0);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+  const { restaurant } = useRestaurant();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -202,7 +205,16 @@ export default function PaymentSuccessPage() {
     }
   };
 
-  const amount = paymentDetails?.amount || urlAmount;
+  // Calculate total amount including tip, commission, and IVA
+  const amount = paymentDetails?.baseAmount
+    ? paymentDetails.baseAmount +
+      (paymentDetails.tipAmount || 0) +
+      (paymentDetails.commissionAmount || 0) +
+      (paymentDetails.ivaAmount || 0)
+    : paymentDetails?.amount || urlAmount;
+
+  // Get dish orders from paymentDetails
+  const dishOrders = paymentDetails?.dishOrders || [];
 
   const handleBackToMenu = () => {
     // Since session is cleared, redirect to home page to select table again
@@ -347,6 +359,15 @@ export default function PaymentSuccessPage() {
                 Ir al menú
               </button>
 
+              {/* Ticket btn */}
+              <button
+                onClick={() => setIsTicketModalOpen(true)}
+                className="w-full flex items-center justify-center gap-2 text-black border border-black py-3 rounded-full cursor-pointer transition-colors bg-white hover:bg-stone-100"
+              >
+                <Receipt className="size-5" strokeWidth={1.5} />
+                Ver ticket de compra
+              </button>
+
               {!isSignedIn && (
                 <button
                   onClick={() => {
@@ -363,6 +384,185 @@ export default function PaymentSuccessPage() {
           </div>
         </div>
       </div>
+
+      {/* Ticket Modal */}
+      {isTicketModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/25 backdrop-blur-xs z-999 flex items-center justify-center"
+          onClick={() => setIsTicketModalOpen(false)}
+        >
+          <div
+            className="bg-white w-full mx-4 rounded-4xl overflow-y-auto z-999 max-h-[85vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-full flex justify-end">
+              <button
+                onClick={() => setIsTicketModalOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors justify-end flex items-end mt-3 mr-3"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Header */}
+            <div className="px-6 flex items-center justify-center mb-4">
+              <div className="flex flex-col justify-center items-center gap-3">
+                {restaurant?.logo_url ? (
+                  <img
+                    src={restaurant.logo_url}
+                    alt={restaurant.name}
+                    className="size-20 object-cover rounded-lg"
+                  />
+                ) : (
+                  <Receipt className="size-20 text-teal-600" />
+                )}
+                <div className="flex flex-col items-center justify-center">
+                  <h2 className="text-xl text-black">
+                    {restaurant?.name || restaurantData.name}
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    Mesa {state.tableNumber || tableNumber || "N/A"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 space-y-4">
+              {/* Order Info */}
+              <div className="border-t border-[#8e8e8e] pt-4">
+                <h3 className="font-medium text-xl text-black mb-3">
+                  Detalles del pago
+                </h3>
+                <div className="space-y-2">
+                  {paymentId && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <CreditCard className="w-4 h-4 text-gray-700" />
+                      <span className="text-sm font-mono">Id: {paymentId}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Calendar className="w-4 h-4 text-gray-700" />
+                    <span className="text-sm capitalize">
+                      {new Date().toLocaleDateString("es-MX", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  {paymentDetails?.userName && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <Utensils className="w-4 h-4 text-gray-700" />
+                      <span className="text-sm">{paymentDetails.userName}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Order Items */}
+              {dishOrders.length > 0 && (
+                <div className="border-t border-[#8e8e8e] pt-4">
+                  <h3 className="font-medium text-xl text-black mb-3">
+                    Items de la orden
+                  </h3>
+                  <div className="space-y-3">
+                    {dishOrders.map((dish: any, index: number) => (
+                      <div
+                        key={dish.dish_order_id || index}
+                        className="flex justify-between items-start gap-3"
+                      >
+                        <div className="flex-1">
+                          <p className="text-black font-medium">
+                            {dish.quantity}x {dish.item}
+                          </p>
+                          {dish.guest_name && (
+                            <p className="text-xs text-gray-600 uppercase">
+                              {dish.guest_name}
+                            </p>
+                          )}
+                          {dish.custom_fields &&
+                            dish.custom_fields.length > 0 && (
+                              <div className="text-xs text-gray-600 mt-1">
+                                {dish.custom_fields.map(
+                                  (field: any, idx: number) => (
+                                    <p key={idx}>
+                                      {field.fieldName}:{" "}
+                                      {field.selectedOptions
+                                        .map((opt: any) => opt.optionName)
+                                        .join(", ")}
+                                    </p>
+                                  )
+                                )}
+                              </div>
+                            )}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-black font-medium">
+                            ${dish.total_price?.toFixed(2) || "0.00"} MXN
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Breakdown */}
+              <div className="border-t border-[#8e8e8e] pt-4">
+                <div className="space-y-3">
+                  {paymentDetails?.baseAmount && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700">Subtotal:</span>
+                      <span className="text-black font-medium">
+                        ${paymentDetails.baseAmount.toFixed(2)} MXN
+                      </span>
+                    </div>
+                  )}
+
+                  {paymentDetails?.tipAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700">Propina:</span>
+                      <span className="text-black font-medium">
+                        ${paymentDetails.tipAmount.toFixed(2)} MXN
+                      </span>
+                    </div>
+                  )}
+
+                  {paymentDetails?.commissionAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700">Comisión:</span>
+                      <span className="text-black font-medium">
+                        ${paymentDetails.commissionAmount.toFixed(2)} MXN
+                      </span>
+                    </div>
+                  )}
+
+                  {paymentDetails?.ivaAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700">IVA:</span>
+                      <span className="text-black font-medium">
+                        ${paymentDetails.ivaAmount.toFixed(2)} MXN
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Total Summary */}
+              <div className="flex justify-between items-center border-t border-[#8e8e8e] pt-4 mb-6">
+                <span className="text-lg font-medium text-black">Total</span>
+                <span className="text-lg font-medium text-black">
+                  ${amount.toFixed(2)} MXN
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
