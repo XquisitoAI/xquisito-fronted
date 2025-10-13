@@ -252,7 +252,7 @@ export default function OrderStatus() {
                                       <h3 className="text-sm text-[#8e8e8e]">
                                         {dish.guest_name.toUpperCase()}
                                       </h3>
-                                      <h4 className="text-base text-black">
+                                      <h4 className="text-base text-black capitalize">
                                         {dish.item}
                                       </h4>
                                       {dish.custom_fields &&

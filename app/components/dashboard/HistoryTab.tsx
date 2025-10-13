@@ -125,7 +125,7 @@ export default function HistoryTab() {
 
   if (isLoading) {
     return (
-      <div className="h-full flex items-center justify-center mt-20">
+      <div className="flex items-center justify-center py-12">
         <Loader2 className="size-8 animate-spin text-teal-600" />
       </div>
     );
@@ -151,34 +151,45 @@ export default function HistoryTab() {
   }
 
   // Datos de orden por tableOrderId
-  const groupedOrders = orders.reduce(
-    (acc, order) => {
-      const key = order.tableOrderId;
-      if (!acc[key]) {
-        acc[key] = {
-          tableOrderId: order.tableOrderId,
-          tableNumber: order.tableNumber,
-          tableOrderDate: order.tableOrderDate,
-          tableOrderStatus: order.tableOrderStatus,
-          restaurantId: order.restaurantId,
-          restaurantName: order.restaurantName,
-          restaurantLogo: order.restaurantLogo,
-          orders: [],
-        };
-      }
-      acc[key].orders.push(order);
-      return acc;
-    },
-    {} as Record<number, any>
+  const groupedOrders = Object.values(
+    orders.reduce(
+      (acc, order) => {
+        const key = order.tableOrderId;
+        if (!acc[key]) {
+          acc[key] = {
+            tableOrderId: order.tableOrderId,
+            tableNumber: order.tableNumber,
+            tableOrderDate: order.tableOrderDate,
+            tableOrderStatus: order.tableOrderStatus,
+            restaurantId: order.restaurantId,
+            restaurantName: order.restaurantName,
+            restaurantLogo: order.restaurantLogo,
+            orders: [],
+          };
+        }
+        acc[key].orders.push(order);
+        return acc;
+      },
+      {} as Record<number, any>
+    )
+  ).sort(
+    (a, b) =>
+      new Date(b.tableOrderDate).getTime() -
+      new Date(a.tableOrderDate).getTime()
   );
 
   return (
     <>
       <h1 className="text-gray-700 text-xl mb-3">Ordenes previas</h1>
       <div className="space-y-3">
-        {Object.values(groupedOrders).map((group: any) => {
+        {groupedOrders.map((group: any) => {
           const totalAmount = group.orders.reduce(
             (sum: number, order: OrderHistoryItem) => sum + order.totalPrice,
+            0
+          );
+
+          const totalQuantity = group.orders.reduce(
+            (sum: number, order: OrderHistoryItem) => sum + order.quantity,
             0
           );
 
@@ -211,8 +222,8 @@ export default function HistoryTab() {
                   <div className="flex-1">
                     <h3 className="text-black mb-1">{group.restaurantName}</h3>
                     <p className="text-sm text-gray-600 mb-1">
-                      {group.orders.length}{" "}
-                      {group.orders.length === 1 ? "articulo" : "articulos"}: $
+                      {totalQuantity}{" "}
+                      {totalQuantity === 1 ? "articulo" : "articulos"} - $
                       {totalAmount.toFixed(2)}
                     </p>
                     <p className="text-xs text-gray-400">
@@ -368,21 +379,6 @@ export default function HistoryTab() {
                       key={dish.dishOrderId}
                       className="flex items-start gap-3 pt-3 first:pt-0 pb-3"
                     >
-                      {/* Dish Image */}
-                      {/*
-                      {dish.images && dish.images.length > 0 ? (
-                        <img
-                          src={dish.images[0]}
-                          alt={dish.item}
-                          className="size-16 object-cover rounded-lg"
-                        />
-                      ) : (
-                        <div className="size-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                          <span className="text-2xl">🍽️</span>
-                        </div>
-                      )}
-                      */}
-
                       {/* Dish Info */}
                       <div className="flex-1">
                         <h4 className="font-medium text-black capitalize">
@@ -399,28 +395,6 @@ export default function HistoryTab() {
                             + Extras: ${dish.extraPrice.toFixed(2)} MXN
                           </p>
                         )}
-
-                        {/* Custom Fields */}
-                        {/*
-                        {dish.customFields && dish.customFields.length > 0 && (
-                          <div className="mt-2 space-y-1">
-                            {dish.customFields.map(
-                              (field: any, idx: number) => (
-                                <div
-                                  key={idx}
-                                  className="text-xs text-gray-600"
-                                >
-                                  <span className="font-medium">
-                                    {field.fieldName}:
-                                  </span>{" "}
-                                  {field.selectedOptions
-                                    .map((opt: any) => opt.optionName)
-                                    .join(", ")}
-                                </div>
-                              )
-                            )}
-                          </div>
-                        )}*/}
                       </div>
 
                       {/* Total Price */}

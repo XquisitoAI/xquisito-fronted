@@ -84,3 +84,17 @@ body {
 .animate-bounce-in {
   animation: bounce-in 0.5s ease-out forwards;
 }
+
+@layer components {
+  .myradio {
+    @apply w-4 h-4 bg-gray-100 border border-gray-300 rounded-full cursor-pointer;
+    @apply focus:outline-none;
+    @apply checked:bg-[#eab3f4] checked:border-transparent;
+    @apply appearance-none relative;
+  }
+
+  .myradio:checked::before {
+    content: "";
+    @apply absolute inset-0 m-auto w-1.5 h-1.5 bg-white rounded-full;
+  }
+}

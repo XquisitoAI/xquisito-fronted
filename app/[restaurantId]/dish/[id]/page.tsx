@@ -539,7 +539,7 @@ export default function DishDetailPage() {
                                     onChange={() =>
                                       handleDropdownChange(field.id, option.id)
                                     }
-                                    className="w-4 h-4 border-[#8e8e8e] accent-[#eab3f4]"
+                                    className="myradio"
                                   />
                                 </label>
                               );
