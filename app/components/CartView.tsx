@@ -66,7 +66,7 @@ export default function CartView() {
                 </div>
               ) : (
                 <div>
-                  <div className="text-black font-medium text-sm flex gap-14 justify-end translate-y-4">
+                  <div className="text-black font-medium text-sm flex gap-10 justify-end translate-y-4">
                     <span>Cant.</span>
                     <span>Precio</span>
                   </div>
@@ -147,7 +147,7 @@ export default function CartView() {
                                 className="size-4 flex items-center justify-center text-black cursor-pointer"
                               />
                             </div>
-                            <div className="w-20 text-right">
+                            <div className="w-16 text-right">
                               <p className="text-base text-black">
                                 $
                                 {(

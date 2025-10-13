@@ -447,7 +447,8 @@ export default function CardSelectionPage() {
 
       throw new Error("Formato de respuesta de pago inesperado");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
       console.error("Payment error:", error);
       alert(`Error en el pago: ${errorMessage}`);
     } finally {

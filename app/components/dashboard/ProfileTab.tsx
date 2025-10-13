@@ -306,7 +306,7 @@ export default function ProfileTab() {
 
       <div className="flex gap-4 mb-4">
         {/* Nombre */}
-        <div className="space-y-2">
+        <div className="space-y-2 flex-1">
           <label className="gap-1.5 flex items-center text-sm text-gray-700">
             <User className="size-3.5" />
             Nombre
@@ -322,7 +322,7 @@ export default function ProfileTab() {
         </div>
 
         {/* Apellido */}
-        <div className="space-y-2">
+        <div className="space-y-2 flex-1">
           <label className="gap-1.5 flex items-center text-sm text-gray-700">
             <User className="size-3.5" />
             Apellido

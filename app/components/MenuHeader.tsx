@@ -57,7 +57,7 @@ export default function MenuHeader({
               </GlassSurface>
             </div>
             {Array.isArray(state.dishOrders) && state.dishOrders.length > 0 && (
-              <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full size-4 flex items-center justify-center text-xs font-normal">
+              <div className="absolute -top-1 -right-1 bg-[#eab3f4] text-white rounded-full size-4 flex items-center justify-center text-xs font-normal">
                 {state.dishOrders.length}
               </div>
             )}
@@ -83,7 +83,7 @@ export default function MenuHeader({
             {state.currentUserTotalItems > 0 && (
               <div
                 id="cart-badge"
-                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full size-4 flex items-center justify-center text-xs font-normal"
+                className="absolute -top-1 -right-1 bg-[#eab3f4] text-white rounded-full size-4 flex items-center justify-center text-xs font-normal"
               >
                 {state.currentUserTotalItems}
               </div>
