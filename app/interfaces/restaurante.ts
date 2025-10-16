@@ -10,6 +10,13 @@ export interface Restaurant {
   phone: string | null;
   email: string | null;
   is_active: boolean;
+  opening_hours?: {
+    [key: string]: {
+      is_closed: boolean;
+      open_time: string;
+      close_time: string;
+    };
+  };
   created_at: string;
   updated_at: string;
 }

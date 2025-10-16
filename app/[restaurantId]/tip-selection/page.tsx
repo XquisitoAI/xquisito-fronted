@@ -166,10 +166,10 @@ export default function TipSelectionPage() {
   };
 
   const tipAmount = calculateTipAmount();
-  const commissionAmount = baseAmount * 0.02; // 2% de comisión
-  const subtotalEcartpay = baseAmount + tipAmount + commissionAmount;
+  const subtotalEcartpay = baseAmount + tipAmount;
   const ivaAmount = subtotalEcartpay * 0.16; // 16% de IVA sobre el subtotal
-  const paymentAmount = subtotalEcartpay + ivaAmount;
+  const commissionAmount = (subtotalEcartpay + ivaAmount) * 0.02; // 2% de comisión
+  const paymentAmount = subtotalEcartpay + ivaAmount + commissionAmount;
 
   const handleTipPercentage = (percentage: number) => {
     setTipPercentage(percentage);
@@ -359,7 +359,7 @@ export default function TipSelectionPage() {
                               <img
                                 src={dish.images[0] || "/logo-short-green.webp"}
                                 alt="Logo Xquisito"
-                                className="w-full h-full object-cover rounded-xl"
+                                className="w-full h-full object-cover rounded-sm"
                               />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -617,7 +617,8 @@ export default function TipSelectionPage() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-black font-medium">
-                    + {paymentType === "full-bill"
+                    +{" "}
+                    {paymentType === "full-bill"
                       ? "Total"
                       : paymentType === "select-items"
                         ? "Tus artículos"

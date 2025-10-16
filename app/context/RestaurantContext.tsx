@@ -1,9 +1,10 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
 import { Restaurant } from "../interfaces/restaurante";
 import { MenuSection } from "../interfaces/category";
 import { restaurantService } from "../services/restaurant.service";
+import { isRestaurantOpen } from "../utils/restaurantHours";
 
 interface RestaurantContextValue {
   restaurantId: number | null;
@@ -11,6 +12,7 @@ interface RestaurantContextValue {
   menu: MenuSection[];
   loading: boolean;
   error: string | null;
+  isOpen: boolean;
   setRestaurantId: (id: number) => void;
   refetchMenu: () => Promise<void>;
 }
@@ -81,12 +83,28 @@ export function RestaurantProvider({ children }: RestaurantProviderProps) {
     }
   }, [restaurantId]);
 
+  // Check if restaurant is currently open (re-check every minute)
+  const isOpen = useMemo(() => {
+    return isRestaurantOpen(restaurant?.opening_hours);
+  }, [restaurant?.opening_hours]);
+
+  // Re-check restaurant hours every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Force re-render by updating a dummy state
+      setRestaurant(prev => prev ? { ...prev } : null);
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, []);
+
   const value: RestaurantContextValue = {
     restaurantId,
     restaurant,
     menu,
     loading,
     error,
+    isOpen,
     setRestaurantId,
     refetchMenu,
   };

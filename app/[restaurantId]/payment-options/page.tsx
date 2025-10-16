@@ -138,8 +138,22 @@ export default function PaymentOptionsPage() {
   const tableTotalItems =
     state.tableSummary?.data?.data?.no_items || dishOrders.length;
 
-  // Obtener usuarios únicos considerando split status si está activo
+  // Obtener usuarios únicos considerando active_users con total_paid_amount === 0
   const uniqueUsers = (() => {
+    // Si tenemos activeUsers, usar esa información
+    if (state.activeUsers && state.activeUsers.length > 0) {
+      const usersWithZeroPaid = state.activeUsers
+        .filter((user) => user.total_paid_amount === 0)
+        .map((user) => user.guest_name)
+        .filter(Boolean);
+
+      console.log("🔍 Using active_users with total_paid_amount === 0:");
+      console.log("- Active users:", state.activeUsers);
+      console.log("- Users with zero paid:", usersWithZeroPaid);
+
+      return [...new Set(usersWithZeroPaid)]; // Asegurar unicidad
+    }
+
     // Si hay split status activo, usar esa información
     if (splitStatus && Array.isArray(splitStatus.split_payments)) {
       const allUsers = splitStatus.split_payments.map((payment: any) => ({

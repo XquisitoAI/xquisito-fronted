@@ -7,8 +7,10 @@ import {
 import { useTable } from "../context/TableContext";
 import { useTableNavigation } from "../hooks/useTableNavigation";
 import { useFlyToCart } from "../hooks/useFlyToCart";
+import { useRestaurant } from "../context/RestaurantContext";
 import { Plus, Minus } from "lucide-react";
 import { useRef, useState, useEffect, useMemo } from "react";
+import RestaurantClosedModal from "./RestaurantClosedModal";
 
 interface MenuItemProps {
   item: MenuItemDB | MenuItemData;
@@ -37,9 +39,11 @@ export default function MenuItem({ item }: MenuItemProps) {
   const { state, dispatch } = useTable();
   const { navigateWithTable } = useTableNavigation();
   const { flyToCart } = useFlyToCart();
+  const { isOpen, restaurant } = useRestaurant();
   const plusButtonRef = useRef<HTMLDivElement>(null);
   const [localQuantity, setLocalQuantity] = useState(0);
   const [isPulsing, setIsPulsing] = useState(false);
+  const [showClosedModal, setShowClosedModal] = useState(false);
 
   // Verificar si el item tiene custom fields
   const hasCustomFields = useMemo(() => {
@@ -66,6 +70,12 @@ export default function MenuItem({ item }: MenuItemProps) {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // Verificar si el restaurante está abierto
+    if (!isOpen) {
+      setShowClosedModal(true);
+      return;
+    }
 
     // Si tiene custom fields, navegar a la página de detalle
     if (hasCustomFields) {
@@ -149,10 +159,18 @@ export default function MenuItem({ item }: MenuItemProps) {
   const displayQuantity = Math.max(localQuantity, currentQuantity);
 
   return (
-    <div
-      className="border-b border-gray-300 py-4 relative"
-      onClick={handleImageClick}
-    >
+    <>
+      <RestaurantClosedModal
+        isOpen={showClosedModal}
+        onClose={() => setShowClosedModal(false)}
+        openingHours={restaurant?.opening_hours}
+        restaurantName={restaurant?.name}
+        restaurantLogo={restaurant?.logo_url}
+      />
+      <div
+        className="border-b border-gray-300 py-4 relative"
+        onClick={handleImageClick}
+      >
       <div className="flex items-center gap-4">
         {/* Image */}
         <div className="flex-shrink-0 cursor-pointer">
@@ -237,5 +255,6 @@ export default function MenuItem({ item }: MenuItemProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }
