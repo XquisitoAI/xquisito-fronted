@@ -1,19 +1,50 @@
 "use client";
 
+import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
-import { useTable } from "../context/TableContext";
+import { useTable, CartItem } from "../context/TableContext";
 import { useTableNavigation } from "../hooks/useTableNavigation";
 import { getRestaurantData } from "../utils/restaurantData";
 import MenuHeaderBack from "./MenuHeaderBack";
+import OrderAnimation from "./UI/OrderAnimation";
+import { useUser } from "@clerk/nextjs";
 
 export default function CartView() {
-  const { state, dispatch } = useTable();
+  const { state, dispatch, submitOrder } = useTable();
   const { navigateWithTable } = useTableNavigation();
   const restaurantData = getRestaurantData();
+  const { isLoaded, isSignedIn, user } = useUser();
+  const [showOrderAnimation, setShowOrderAnimation] = useState(false);
+  const [orderedItems, setOrderedItems] = useState<CartItem[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleOrder = () => {
-    // Navegamos a la vista de usuario para capturar su nombre
-    navigateWithTable("/user");
+  const handleOrder = async () => {
+    // Si el usuario está loggeado, hacer la orden directamente con animación
+    if (isLoaded && isSignedIn && user) {
+      setIsSubmitting(true);
+      try {
+        // Guardar items antes de que se limpie el carrito
+        setOrderedItems([...state.currentUserItems]);
+        // Mostrar animación de orden INMEDIATAMENTE
+        setShowOrderAnimation(true);
+        // Enviar la orden a la API en segundo plano usando el nombre de Clerk
+        const userName = user.firstName || user.username || "Usuario";
+        await submitOrder(userName);
+      } catch (error) {
+        console.error("Error submitting order:", error);
+        // Si hay error, ocultar la animación
+        setShowOrderAnimation(false);
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      // Si NO está loggeado, navegar a la vista de usuario para capturar su nombre
+      navigateWithTable("/user");
+    }
+  };
+
+  const handleContinueFromAnimation = () => {
+    navigateWithTable("/order");
   };
 
   return (
@@ -198,6 +229,15 @@ export default function CartView() {
           </div>
         </div>
       </div>
+
+      {/* OrderAnimation overlay - solo para usuarios loggeados */}
+      {showOrderAnimation && (
+        <OrderAnimation
+          userName={user?.firstName || user?.username || "Usuario"}
+          orderedItems={orderedItems}
+          onContinue={handleContinueFromAnimation}
+        />
+      )}
     </div>
   );
 }

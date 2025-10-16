@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useTable } from "../../context/TableContext";
+import { useTable, CartItem } from "../../context/TableContext";
 import { useTableNavigation } from "../../hooks/useTableNavigation";
 import { useRestaurant } from "../../context/RestaurantContext";
 import { getRestaurantData } from "../../utils/restaurantData";
 import MenuHeaderBack from "../../components/MenuHeaderBack";
 import { Loader2 } from "lucide-react";
+import OrderAnimation from "../../components/UI/OrderAnimation";
 
 export default function UserPage() {
   const params = useParams();
@@ -22,6 +23,9 @@ export default function UserPage() {
 
   const [userName, setUserName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showOrderAnimation, setShowOrderAnimation] = useState(false);
+  const [orderedItems, setOrderedItems] = useState<CartItem[]>([]);
+  const [orderUserName, setOrderUserName] = useState("");
   const { state, dispatch, submitOrder } = useTable();
   const { tableNumber, navigateWithTable } = useTableNavigation();
   const router = useRouter();
@@ -58,16 +62,25 @@ export default function UserPage() {
     if (userName.trim()) {
       setIsSubmitting(true);
       try {
-        // Enviar la orden a la API con el nombre del usuario directamente
+        // Guardar items antes de que se limpie el carrito
+        setOrderedItems([...state.currentUserItems]);
+        setOrderUserName(userName.trim());
+        // Mostrar animación de orden INMEDIATAMENTE
+        setShowOrderAnimation(true);
+        // Enviar la orden a la API en segundo plano
         await submitOrder(userName.trim());
-        // Navegar a la página de órdenes
-        navigateWithTable("/order");
       } catch (error) {
         console.error("Error submitting order:", error);
+        // Si hay error, ocultar la animación
+        setShowOrderAnimation(false);
       } finally {
         setIsSubmitting(false);
       }
     }
+  };
+
+  const handleContinueFromAnimation = () => {
+    navigateWithTable("/order");
   };
 
   if (!tableNumber || isNaN(parseInt(tableNumber))) {
@@ -186,6 +199,15 @@ export default function UserPage() {
           </button>
         </div>
       </div>*/}
+
+      {/* OrderAnimation overlay - para usuarios invitados */}
+      {showOrderAnimation && (
+        <OrderAnimation
+          userName={orderUserName}
+          orderedItems={orderedItems}
+          onContinue={handleContinueFromAnimation}
+        />
+      )}
     </div>
   );
 }
