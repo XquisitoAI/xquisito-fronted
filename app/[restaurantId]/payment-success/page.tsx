@@ -6,11 +6,42 @@ import { useTable } from "../../context/TableContext";
 import { useTableNavigation } from "../../hooks/useTableNavigation";
 import { useGuest, useIsGuest } from "../../context/GuestContext";
 import { useRestaurant } from "../../context/RestaurantContext";
-import MenuHeader from "../../components/MenuHeader";
 import { getRestaurantData } from "../../utils/restaurantData";
 import { apiService } from "../../utils/api";
 import { useUser } from "@clerk/nextjs";
-import { Receipt, X, Calendar, CreditCard, Utensils } from "lucide-react";
+import {
+  Receipt,
+  X,
+  Calendar,
+  CreditCard,
+  Utensils,
+  CircleAlert,
+} from "lucide-react";
+import {
+  Mastercard,
+  Visa,
+  Amex,
+  Discover,
+} from "react-payment-logos/dist/logo";
+import { JSX } from "react";
+
+// Utility function to get card type icon
+function getCardTypeIcon(cardType: string): JSX.Element {
+  const type = cardType.toLowerCase();
+
+  switch (type) {
+    case "visa":
+      return <Visa style={{ width: "40px", height: "25px" }} />;
+    case "mastercard":
+      return <Mastercard style={{ width: "40px", height: "25px" }} />;
+    case "amex":
+      return <Amex style={{ width: "40px", height: "25px" }} />;
+    case "discover":
+      return <Discover style={{ width: "40px", height: "25px" }} />;
+    default:
+      return <CreditCard className="w-5 h-5 text-gray-700" />;
+  }
+}
 
 export default function PaymentSuccessPage() {
   const params = useParams();
@@ -43,6 +74,7 @@ export default function PaymentSuccessPage() {
   const [rating, setRating] = useState(0); // Rating de 1 a 5 (solo enteros)
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+  const [isBreakdownModalOpen, setIsBreakdownModalOpen] = useState(false);
   const { restaurant } = useRestaurant();
 
   useEffect(() => {
@@ -91,88 +123,6 @@ export default function PaymentSuccessPage() {
       clearGuestSession();
     }
   }, []);
-
-  // Mark orders as paid when payment is successful
-  {
-    /*
-  useEffect(() => {
-    const markOrdersPaid = async () => {
-      // Check if already processed (prevent double execution)
-      const alreadyProcessed =
-        paymentDetails?.alreadyProcessed ||
-        new URLSearchParams(window.location.search).get("processed") === "true";
-
-      console.log(
-        "🔍 Payment success page - checking if should mark orders as paid:"
-      );
-      console.log("   ordersMarkedAsPaid:", ordersMarkedAsPaid);
-      console.log("   alreadyProcessed:", alreadyProcessed);
-      console.log("   paymentId:", paymentId);
-      console.log("   paymentDetails:", paymentDetails);
-      console.log("   tableNumber:", state.tableNumber || tableNumber);
-
-      if (
-        !ordersMarkedAsPaid &&
-        !alreadyProcessed &&
-        (paymentId || paymentDetails) &&
-        (state.tableNumber || tableNumber)
-      ) {
-        try {
-          // Intentar obtener usuarios específicos desde los detalles del pago almacenados
-          const specificUsers = paymentDetails?.users;
-
-          console.log("🔍 Payment success page - marking orders as paid:");
-          console.log("   specificUsers from paymentDetails:", specificUsers);
-
-          if (specificUsers && specificUsers.length > 0) {
-            console.log(
-              "🎯 Payment success page loaded, marking orders as paid for specific users:",
-              specificUsers
-            );
-            await markOrdersAsPaid(undefined, specificUsers);
-            console.log(
-              "✅ Specific user orders marked as paid successfully from payment success page"
-            );
-          } else {
-            console.log(
-              "🎉 Payment success page loaded, marking all orders as paid for table:",
-              state.tableNumber || tableNumber
-            );
-            await markOrdersAsPaid();
-            console.log(
-              "✅ All orders marked as paid successfully from payment success page"
-            );
-          }
-
-          setOrdersMarkedAsPaid(true);
-        } catch (error) {
-          console.error(
-            "❌ Error marking orders as paid from payment success page:",
-            error
-          );
-          // Don't block the success page if this fails
-        }
-      } else {
-        console.log(
-          "⏭️ Skipping order marking - already processed or conditions not met"
-        );
-        if (alreadyProcessed) {
-          console.log("✅ Orders already processed by add-tip page");
-          setOrdersMarkedAsPaid(true);
-        }
-      }
-    };
-
-    markOrdersPaid();
-  }, [
-    paymentId,
-    paymentDetails?.users,
-    paymentDetails?.alreadyProcessed,
-    state.tableNumber,
-    tableNumber,
-    ordersMarkedAsPaid,
-  ]);*/
-  }
 
   const clearGuestSession = async () => {
     if (typeof window !== "undefined") {
@@ -233,11 +183,11 @@ export default function PaymentSuccessPage() {
         <img
           src="/logo-short-green.webp"
           alt="Xquisito Logo"
-          className="size-20"
+          className="size-20 animate-logo-fade-in"
         />
       </div>
 
-      <div className="px-4 w-full">
+      <div className="px-4 w-full animate-slide-up">
         <div className="flex-1 flex flex-col">
           <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
             <div className="py-6 px-8 flex flex-col justify-center items-center mb-6 mt-2 gap-2">
@@ -251,69 +201,6 @@ export default function PaymentSuccessPage() {
           </div>
 
           <div className="bg-white rounded-t-4xl relative z-10 flex flex-col min-h-96 justify-center px-6 flex-1 py-8">
-            {/* Success Message */}
-            {/*
-            <div className="text-center mb-8">
-
-              <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-gray-600">Amount Paid:</span>
-                  <span className="text-xl font-bold text-green-600">
-                    ${amount.toFixed(2)}
-                  </span>
-                </div>
-
-                {paymentId && (
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-gray-600">Payment ID:</span>
-                    <span className="text-gray-800 font-mono text-sm">
-                      {paymentId.substring(0, 12)}...
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Table:</span>
-                  <span className="text-gray-800">
-                    {state.tableNumber || tableNumber || "N/A"}
-                  </span>
-                </div>
-              </div>
-            </div>*/}
-
-            {/* Guest User Indicator */}
-            {/*
-            {isGuest && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-3 h-3 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-green-800 font-medium text-sm">
-                      Payment Complete
-                    </p>
-                    <p className="text-green-600 text-xs">
-                      {tableNumber ? `Table ${tableNumber}` : "Guest session"} •
-                      Thank you for your payment!
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}*/}
-
             {/* Rating Prompt */}
             <div className="text-center mb-8">
               <p className="text-xl font-medium text-black mb-2">
@@ -435,10 +322,10 @@ export default function PaymentSuccessPage() {
                   Detalles del pago
                 </h3>
                 <div className="space-y-2">
-                  {paymentId && (
+                  {paymentDetails?.userName && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      <CreditCard className="w-4 h-4 text-gray-700" />
-                      <span className="text-sm font-mono">Id: {paymentId}</span>
+                      <Utensils className="w-4 h-4 text-gray-700" />
+                      <span className="text-sm">{paymentDetails.userName}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2 text-gray-700">
@@ -454,10 +341,17 @@ export default function PaymentSuccessPage() {
                       })}
                     </span>
                   </div>
-                  {paymentDetails?.userName && (
+
+                  {paymentDetails?.cardLast4 && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      <Utensils className="w-4 h-4 text-gray-700" />
-                      <span className="text-sm">{paymentDetails.userName}</span>
+                      {paymentDetails?.cardBrand ? (
+                        getCardTypeIcon(paymentDetails.cardBrand)
+                      ) : (
+                        <CreditCard className="w-4 h-4 text-gray-700" />
+                      )}
+                      <span className="text-sm font-mono">
+                        **** **** **** {paymentDetails.cardLast4}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -484,21 +378,6 @@ export default function PaymentSuccessPage() {
                               {dish.guest_name}
                             </p>
                           )}
-                          {dish.custom_fields &&
-                            dish.custom_fields.length > 0 && (
-                              <div className="text-xs text-gray-600 mt-1">
-                                {dish.custom_fields.map(
-                                  (field: any, idx: number) => (
-                                    <p key={idx}>
-                                      {field.fieldName}:{" "}
-                                      {field.selectedOptions
-                                        .map((opt: any) => opt.optionName)
-                                        .join(", ")}
-                                    </p>
-                                  )
-                                )}
-                              </div>
-                            )}
                         </div>
                         <div className="text-right">
                           <p className="text-black font-medium">
@@ -507,57 +386,118 @@ export default function PaymentSuccessPage() {
                         </div>
                       </div>
                     ))}
+
+                    {/* Propina como item */}
+                    {paymentDetails?.tipAmount > 0 && (
+                      <div className="flex justify-between items-start gap-3 pt-3">
+                        <div className="flex-1">
+                          <p className="text-black font-medium">Propina</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-black font-medium">
+                            ${paymentDetails.tipAmount.toFixed(2)} MXN
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Payment Breakdown */}
-              <div className="border-t border-[#8e8e8e] pt-4">
-                <div className="space-y-3">
-                  {paymentDetails?.baseAmount && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">Subtotal:</span>
-                      <span className="text-black font-medium">
-                        ${paymentDetails.baseAmount.toFixed(2)} MXN
-                      </span>
-                    </div>
-                  )}
-
-                  {paymentDetails?.tipAmount > 0 && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">Propina:</span>
-                      <span className="text-black font-medium">
-                        ${paymentDetails.tipAmount.toFixed(2)} MXN
-                      </span>
-                    </div>
-                  )}
-
-                  {paymentDetails?.commissionAmount > 0 && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">Comisión:</span>
-                      <span className="text-black font-medium">
-                        ${paymentDetails.commissionAmount.toFixed(2)} MXN
-                      </span>
-                    </div>
-                  )}
-
-                  {paymentDetails?.ivaAmount > 0 && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">IVA:</span>
-                      <span className="text-black font-medium">
-                        ${paymentDetails.ivaAmount.toFixed(2)} MXN
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Total Summary */}
+              {/* Total Summary with Info Button */}
               <div className="flex justify-between items-center border-t border-[#8e8e8e] pt-4 mb-6">
-                <span className="text-lg font-medium text-black">Total</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-medium text-black">Total</span>
+                  <button
+                    onClick={() => setIsBreakdownModalOpen(true)}
+                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                    aria-label="Ver desglose"
+                  >
+                    <CircleAlert
+                      className="size-4 cursor-pointer text-gray-500"
+                      strokeWidth={2.3}
+                    />
+                  </button>
+                </div>
                 <span className="text-lg font-medium text-black">
                   ${amount.toFixed(2)} MXN
                 </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Breakdown Modal */}
+      {isBreakdownModalOpen && (
+        <div
+          className="fixed inset-0 flex items-end justify-center"
+          style={{ zIndex: 99999 }}
+        >
+          {/* Fondo */}
+          <div
+            className="absolute inset-0 bg-black/25"
+            onClick={() => setIsBreakdownModalOpen(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="relative bg-white rounded-t-4xl w-full mx-4">
+            {/* Titulo */}
+            <div className="px-6 pt-4">
+              <div className="flex items-center justify-between pb-4 border-b border-[#8e8e8e]">
+                <h3 className="text-lg font-semibold text-black">
+                  Desglose del pago
+                </h3>
+                <button
+                  onClick={() => setIsBreakdownModalOpen(false)}
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                >
+                  <X className="size-5 text-gray-500" />
+                </button>
+              </div>
+            </div>
+
+            {/* Contenido */}
+            <div className="px-6 py-4">
+              <p className="text-black mb-4">
+                El total se obtiene de la suma de:
+              </p>
+              <div className="space-y-3">
+                {paymentDetails?.baseAmount && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-black font-medium">+ Subtotal</span>
+                    <span className="text-black font-medium">
+                      ${paymentDetails.baseAmount.toFixed(2)} MXN
+                    </span>
+                  </div>
+                )}
+
+                {paymentDetails?.tipAmount > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-black font-medium">+ Propina</span>
+                    <span className="text-black font-medium">
+                      ${paymentDetails.tipAmount.toFixed(2)} MXN
+                    </span>
+                  </div>
+                )}
+
+                {paymentDetails?.commissionAmount > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-black font-medium">+ Comisión</span>
+                    <span className="text-black font-medium">
+                      ${paymentDetails.commissionAmount.toFixed(2)} MXN
+                    </span>
+                  </div>
+                )}
+
+                {paymentDetails?.ivaAmount > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-black font-medium">+ IVA (16%)</span>
+                    <span className="text-black font-medium">
+                      ${paymentDetails.ivaAmount.toFixed(2)} MXN
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
