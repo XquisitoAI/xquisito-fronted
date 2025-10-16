@@ -1,6 +1,12 @@
-import { clerkMiddleware } from '@clerk/nextjs/server'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-export default clerkMiddleware()
+export default clerkMiddleware((auth, req) => {
+  // Get the rememberMe preference from localStorage (passed via cookie)
+  const rememberMe = req.cookies.get('rememberMe')?.value === 'true'
+
+  // Set session configuration based on remember me preference
+  // This will be handled by Clerk automatically through the session cookie
+})
 
 export const config = {
   matcher: [

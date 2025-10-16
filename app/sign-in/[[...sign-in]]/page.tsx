@@ -22,15 +22,18 @@ function SignInContent() {
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   const tableNumber = searchParams.get("table");
 
-  // Store table number for post-signin redirect
+  // Store table number and remember me preference for post-signin redirect
   useEffect(() => {
     if (tableNumber) {
       sessionStorage.setItem("pendingTableRedirect", tableNumber);
     }
-  }, [tableNumber]);
+    // Store remember me preference
+    localStorage.setItem("rememberMe", rememberMe.toString());
+  }, [tableNumber, rememberMe]);
 
   const handleSignInSuccess = useCallback(() => {
     navigateWithTable("/payment-options");
@@ -228,7 +231,7 @@ function SignInContent() {
           />
         </div>
         <div className="w-full">
-          <SignIn.Root routing="virtual" path="/sign-in" afterSignInUrl="">
+          <SignIn.Root routing="virtual">
             <SignIn.Step name="start">
               <div className="mb-6 text-center">
                 <h1 className="text-xl font-medium text-white mb-2">
@@ -243,6 +246,7 @@ function SignInContent() {
                     <Clerk.Input
                       required
                       type="email"
+                      autoComplete="username email"
                       className="w-full pl-10 pr-3 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] focus:border-transparent"
                       placeholder="Email"
                     />
@@ -256,12 +260,30 @@ function SignInContent() {
                     <Clerk.Input
                       required
                       type="password"
+                      autoComplete="current-password"
                       className="w-full pl-10 pr-3 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] focus:border-transparent"
                       placeholder="Contraseña"
                     />
                   </div>
                   <Clerk.FieldError className="text-rose-400 text-xs" />
                 </Clerk.Field>
+              </div>
+
+              {/* Remember Me Checkbox */}
+              <div className="flex items-center mt-4">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 text-[#0a8b9b] bg-white border-gray-300 rounded focus:ring-[#0a8b9b] focus:ring-2 cursor-pointer"
+                />
+                <label
+                  htmlFor="rememberMe"
+                  className="ml-2 text-sm text-white cursor-pointer"
+                >
+                  Mantener sesión activa
+                </label>
               </div>
 
               <div className="flex items-center justify-center gap-3 mt-6">
