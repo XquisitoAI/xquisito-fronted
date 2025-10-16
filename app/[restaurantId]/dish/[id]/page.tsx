@@ -5,14 +5,17 @@ import { useEffect, useState, useMemo } from "react";
 import { useTable } from "../../../context/TableContext";
 import { useTableNavigation } from "../../../hooks/useTableNavigation";
 import { useRestaurant } from "../../../context/RestaurantContext";
-import { Minus, Plus, ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import MenuHeaderDish from "@/app/components/MenuHeaderDish";
 import Loader from "@/app/components/Loader";
+import RestaurantClosedModal from "@/app/components/RestaurantClosedModal";
 import {
   MenuItem as MenuItemDB,
   MenuItemData,
   CustomField,
 } from "../../../interfaces/menuItemData";
+import { reviewsApi, Review, ReviewStats } from "../../../services/reviewsApi";
+import { useUser } from "@clerk/nextjs";
 
 export default function DishDetailPage() {
   const params = useParams();
@@ -22,7 +25,7 @@ export default function DishDetailPage() {
   const restaurantId = params.restaurantId as string;
   const { state, dispatch } = useTable();
   const { tableNumber, goBack, navigateWithTable } = useTableNavigation();
-  const { restaurant, menu, loading } = useRestaurant();
+  const { restaurant, menu, loading, isOpen } = useRestaurant();
   const [localQuantity, setLocalQuantity] = useState(0);
   const [isPulsing, setIsPulsing] = useState(false);
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>(
@@ -34,6 +37,14 @@ export default function DishDetailPage() {
   const [customFieldSelections, setCustomFieldSelections] = useState<{
     [fieldId: string]: string | string[];
   }>({});
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [hoveredReviewRating, setHoveredReviewRating] = useState(0);
+  const [showClosedModal, setShowClosedModal] = useState(false);
+  const [dishStats, setDishStats] = useState<ReviewStats | null>(null);
+  const [myReview, setMyReview] = useState<Review | null>(null);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const { isLoaded, user } = useUser();
 
   // Buscar el dish en el menú del contexto
   const dishData = useMemo(() => {
@@ -174,6 +185,128 @@ export default function DishDetailPage() {
     dispatch({ type: "SET_TABLE_NUMBER", payload: tableNumber });
   }, [tableNumber, dispatch, router]);
 
+  // Cargar estadísticas de reviews al montar
+  useEffect(() => {
+    if (dishId && !isNaN(dishId)) {
+      console.log("🔄 Loading reviews for dish:", dishId);
+      loadDishStats();
+      loadMyReview();
+    }
+  }, [dishId]);
+
+  const loadDishStats = async () => {
+    if (!dishId || isNaN(dishId)) return;
+
+    try {
+      const response = await reviewsApi.getMenuItemStats(dishId);
+      console.log("stats response ", response);
+      if (response.success && response.data) {
+        setDishStats(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error loading dish stats:", error);
+    }
+  };
+
+  const loadMyReview = async () => {
+    if (!dishId || isNaN(dishId)) return;
+
+    try {
+      // Determinar si el usuario está autenticado
+      const isAuthenticated = isLoaded && user;
+      const userId = isAuthenticated ? user.id : null;
+
+      // Solo usar guestId si NO está autenticado
+      const guestId =
+        !isAuthenticated && typeof window !== "undefined"
+          ? localStorage.getItem("xquisito-guest-id")
+          : null;
+
+      const response = await reviewsApi.getMyReview(dishId, userId, guestId);
+      console.log("My review response:", response);
+
+      if (response.success) {
+        if (response.data?.data) {
+          // Usuario tiene una review existente
+          setMyReview(response.data.data);
+          setReviewRating(response.data.data.rating);
+        } else {
+          // Usuario no tiene review aún (esto es normal)
+          setMyReview(null);
+          setReviewRating(0);
+        }
+      } else if (response.error?.type === "http_error") {
+        // Si es error 401 u otro error HTTP, simplemente no mostrar review
+        console.log("No review found or no auth:", response.error.message);
+        setMyReview(null);
+        setReviewRating(0);
+      }
+    } catch (error) {
+      console.error("Error loading my review:", error);
+      setMyReview(null);
+      setReviewRating(0);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (reviewRating === 0 || !dishId || isNaN(dishId)) return;
+
+    setIsSubmittingReview(true);
+
+    try {
+      let response;
+
+      // Determinar si el usuario está autenticado
+      const isAuthenticated = isLoaded && user;
+      const userId = isAuthenticated ? user.id : null;
+
+      // Solo usar guestId si NO está autenticado
+      const guestId =
+        !isAuthenticated && typeof window !== "undefined"
+          ? localStorage.getItem("xquisito-guest-id")
+          : null;
+
+      console.log(dishId, reviewRating, userId, guestId);
+
+      if (myReview) {
+        response = await reviewsApi.updateReview(
+          myReview.id,
+          reviewRating,
+          userId,
+          guestId
+        );
+      } else {
+        response = await reviewsApi.createReview({
+          menu_item_id: dishId,
+          rating: reviewRating,
+          user_id: userId,
+          guest_id: guestId,
+        });
+      }
+
+      if (response?.success) {
+        alert(myReview ? "¡Reseña actualizada!" : "¡Gracias por tu reseña!");
+        setIsReviewModalOpen(false);
+
+        // Recargar estadísticas
+        await loadDishStats();
+        await loadMyReview();
+      } else {
+        throw new Error(response.error?.message || "Error al enviar reseña");
+      }
+    } catch (error: any) {
+      console.error("Error submitting review:", error);
+
+      if (error.message.includes("already reviewed")) {
+        alert("Ya has calificado este platillo");
+      } else {
+        alert("Error al enviar la reseña. Intenta de nuevo.");
+      }
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
   // Calcular precio total con extras
   const calculateTotalPrice = () => {
     if (!dishData) return 0;
@@ -201,6 +334,12 @@ export default function DishDetailPage() {
   const handleAddToCart = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (!dishData) return;
+
+    // Verificar si el restaurante está abierto
+    if (!isOpen) {
+      setShowClosedModal(true);
+      return;
+    }
 
     // Aplicar descuento al precio base
     const basePrice =
@@ -252,6 +391,12 @@ export default function DishDetailPage() {
 
   const handleAddToCartAndReturn = () => {
     if (!dishData) return;
+
+    // Verificar si el restaurante está abierto
+    if (!isOpen) {
+      setShowClosedModal(true);
+      return;
+    }
 
     // Aplicar descuento al precio base
     const basePrice =
@@ -381,6 +526,13 @@ export default function DishDetailPage() {
 
   return (
     <div className="min-h-screen bg-white relative">
+      <RestaurantClosedModal
+        isOpen={showClosedModal}
+        onClose={() => setShowClosedModal(false)}
+        openingHours={restaurant?.opening_hours}
+        restaurantName={restaurant?.name}
+        restaurantLogo={restaurant?.logo_url}
+      />
       {/* Slider de imágenes */}
       <div className="absolute top-0 left-0 w-full h-96 z-0">
         <div
@@ -437,20 +589,40 @@ export default function DishDetailPage() {
           <div className="mt-8">
             <div className="flex justify-between items-center text-black mb-6">
               <div className="flex items-center gap-1.5">
-                <button className="text-black">
-                  <svg
-                    className="size-6"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                </button>
-                4.5
+                <svg
+                  className="size-6 text-black"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                {dishStats && dishStats.total_reviews > 0 ? (
+                  <>
+                    <span className="text-lg">
+                      {dishStats.average_rating.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-gray-600">
+                      ({dishStats.total_reviews})
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-sm text-gray-600">Sin reseñas</span>
+                )}
               </div>
-              <a href="" className="underline text-black">
-                Comparte tu reseña
-              </a>
+              <button
+                onClick={() => {
+                  // Si ya hay una review, pre-llenar el rating
+                  if (myReview) {
+                    setReviewRating(myReview.rating);
+                  } else {
+                    setReviewRating(0);
+                  }
+                  setIsReviewModalOpen(true);
+                }}
+                className="underline text-black"
+              >
+                {myReview ? "Editar mi reseña" : "Comparte tu reseña"}
+              </button>
             </div>
             <div className="flex flex-col justify-between items-start mb-4">
               <h2 className="text-3xl font-medium text-black capitalize">
@@ -610,28 +782,114 @@ export default function DishDetailPage() {
                   Agregar al carrito • ${calculateTotalPrice().toFixed(2)} MXN
                 </span>
               </button>
-
-              {/*
-              <div
-                className={`flex gap-2.5 px-6 py-3 h-fit rounded-full border items-center justify-center border-[#8e8e8e]/50 text-black transition-all ${isPulsing ? "bg-[#eab3f4]/50" : "bg-[#f9f9f9]"}`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Minus
-                  className={`size-4 ${displayQuantity > 0 ? "cursor-pointer" : "cursor-no-drop"}`}
-                  onClick={
-                    displayQuantity > 0 ? handleRemoveFromCart : undefined
-                  }
-                />
-                <p className="font-normal">{displayQuantity}</p>
-                <Plus
-                  className="size-4 cursor-pointer"
-                  onClick={handleAddToCart}
-                />
-              </div>*/}
             </div>
           </div>
         </div>
       </main>
+
+      {/* Review Modal */}
+      {isReviewModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/25 z-999 flex items-end justify-center"
+          onClick={() => setIsReviewModalOpen(false)}
+        >
+          <div
+            className="bg-white w-full rounded-t-4xl overflow-y-auto z-999 max-h-[85vh] animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-full flex justify-end">
+              <button
+                onClick={() => setIsReviewModalOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors justify-end flex items-end mt-3 mr-3"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Header */}
+            <div className="px-6 flex items-center justify-center mb-4">
+              <div className="flex flex-col justify-center items-center gap-3">
+                {dish.images.length > 0 ? (
+                  <img
+                    src={dish.images[0]}
+                    alt={dish.name}
+                    className="size-20 object-cover rounded-lg"
+                  />
+                ) : (
+                  <div className="size-20 bg-gray-300 rounded-lg flex items-center justify-center">
+                    <img
+                      src="/logo-short-green.webp"
+                      alt="Logo"
+                      className="size-16 object-contain"
+                    />
+                  </div>
+                )}
+                <div className="flex flex-col items-center justify-center">
+                  <h2 className="text-xl text-black capitalize">{dish.name}</h2>
+                  <p className="text-sm text-gray-600">{section}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 space-y-4">
+              {/* Rating Section */}
+              <div className="border-t border-[#8e8e8e] pt-4">
+                <h3 className="font-normal text-lg text-black mb-3 text-center">
+                  ¿Cómo calificarías este platillo?
+                </h3>
+                <div className="flex justify-center gap-2 mb-4">
+                  {[1, 2, 3, 4, 5].map((starIndex) => {
+                    const currentRating = hoveredReviewRating || reviewRating;
+                    const isFilled = currentRating >= starIndex;
+
+                    return (
+                      <div
+                        key={starIndex}
+                        className="relative cursor-pointer"
+                        onMouseEnter={() => setHoveredReviewRating(starIndex)}
+                        onMouseLeave={() => setHoveredReviewRating(0)}
+                        onClick={() => setReviewRating(starIndex)}
+                      >
+                        <svg
+                          className={`size-8 ${
+                            isFilled ? "text-yellow-400" : "text-white"
+                          }`}
+                          fill="currentColor"
+                          stroke={isFilled ? "#facc15" : "black"}
+                          strokeWidth="1"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-4 pb-6">
+                <button
+                  onClick={handleSubmitReview}
+                  disabled={reviewRating === 0 || isSubmittingReview}
+                  className={`w-full text-white py-3 rounded-full transition-colors ${
+                    reviewRating > 0 && !isSubmittingReview
+                      ? "bg-black hover:bg-stone-950 cursor-pointer"
+                      : "bg-stone-800 cursor-not-allowed"
+                  }`}
+                >
+                  {isSubmittingReview
+                    ? "Enviando..."
+                    : myReview
+                      ? "Actualizar reseña"
+                      : "Enviar reseña"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

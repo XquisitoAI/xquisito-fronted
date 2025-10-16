@@ -58,35 +58,34 @@ class ApiService {
     try {
       const url = `${this.baseURL}${endpoint}`;
 
-      const defaultOptions: RequestInit = {
-        headers: {
-          "Content-Type": "application/json",
-          ...options.headers,
-        },
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...(options.headers as Record<string, string>),
       };
 
       // Add authentication token for Clerk users
       const tokenToUse = authToken || this.authToken;
       if (tokenToUse) {
         // For registered users, use auth token and skip guest headers
-        defaultOptions.headers["Authorization"] = `Bearer ${tokenToUse}`;
+        headers["Authorization"] = `Bearer ${tokenToUse}`;
       } else {
         // For guests only, add guest identification headers
         const guestId = this.getGuestId();
         if (guestId) {
-          defaultOptions.headers["x-guest-id"] = guestId;
+          headers["x-guest-id"] = guestId;
+          console.log("🔑 Adding x-guest-id header:", guestId);
         }
 
         // Add table number if available
         const tableNumber = this.getTableNumber();
         if (tableNumber) {
-          defaultOptions.headers["x-table-number"] = tableNumber;
+          headers["x-table-number"] = tableNumber;
         }
       }
 
       const response = await fetch(url, {
-        ...defaultOptions,
         ...options,
+        headers,
       });
 
       const data = await response.json();
