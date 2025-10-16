@@ -613,17 +613,6 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
           const totalUsers = formattedUsers.length;
 
-          // Separar usuarios autenticados de invitados
-          /*const activeUserIds = activeUsers
-            .filter((user: any) => user.user_id)
-            .map((user: any) => user.user_id);
-
-          const activeGuestNames = activeUsers
-            .filter((user: any) => !user.user_id && user.guest_name)
-            .map((user: any) => user.guest_name);
-
-          const totalUsers = activeUserIds.length + activeGuestNames.length;
-*/
           if (totalUsers > 0) {
             // Recalcular split bill con los active users (tanto autenticados como invitados)
             await initializeSplitBill(

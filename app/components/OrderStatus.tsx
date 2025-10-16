@@ -3,13 +3,11 @@
 import { useTable } from "../context/TableContext";
 import { useTableNavigation } from "../hooks/useTableNavigation";
 import { useGuest } from "../context/GuestContext";
-import { SignInButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
-import MenuHeader from "./MenuHeader";
 import { getRestaurantData } from "../utils/restaurantData";
-import { saveUrlParams } from "../utils/urlParams";
-import MenuHeaderBack from "./MenuHeaderBack";
-import { ChevronRight, X, Loader2, Eye, EyeClosed, Loader } from "lucide-react";
+import { Loader2, Eye, EyeClosed, Loader } from "lucide-react";
+import MenuHeaderBackOrder from "./MenuHeaderBackOrder";
 
 export default function OrderStatus() {
   const { state, loadTableData } = useTable();
@@ -116,7 +114,7 @@ export default function OrderStatus() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
-      <MenuHeaderBack
+      <MenuHeaderBackOrder
         restaurant={restaurantData}
         tableNumber={state.tableNumber}
       />

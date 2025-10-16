@@ -123,48 +123,48 @@ export default function MenuView({ tableNumber }: MenuViewProps) {
 
       <main className="mt-72 relative z-10">
         <div className="bg-white rounded-t-4xl flex flex-col items-center px-6">
-          {/* Assistent Icon */}
-          <div
-            onClick={() => navigateWithTable("/pepper")}
-            className="ml-auto bg-white rounded-full text-black border border-gray-400 size-10 cursor-pointer mt-6 shadow-sm"
-          >
-            <video
-              src="/videos/video-icon-pepper.webm"
-              autoPlay
-              loop
-              muted
-              className="w-full h-full object-cover rounded-full"
-            />
-            {/*<img src="/logo-short-green.webp" alt="AI" className="size-6" />*/}
+          <div className="mt-6 flex items-start justify-between w-full">
+            {/* Settings Icon */}
+            <div
+              onClick={() => {
+                if (user && isLoaded) {
+                  navigateWithTable("/dashboard");
+                } else {
+                  sessionStorage.setItem("signInFromMenu", "true");
+                  navigateWithTable("/sign-in");
+                }
+              }}
+              className="bg-white rounded-full p-1.5 border border-gray-400 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+            >
+              <Settings className="size-5 text-stone-800" strokeWidth={1.5} />
+            </div>
+            {/* Assistent Icon */}
+            <div
+              onClick={() => navigateWithTable("/pepper")}
+              className="bg-white rounded-full text-black border border-gray-400 size-10 cursor-pointer shadow-sm"
+            >
+              <video
+                src="/videos/video-icon-pepper.webm"
+                autoPlay
+                loop
+                muted
+                className="w-full h-full object-cover rounded-full"
+              />
+              {/*<img src="/logo-short-green.webp" alt="AI" className="size-6" />*/}
+            </div>
           </div>
 
           {/* Name and photo */}
           <div className="mb-4 flex flex-col items-center">
-            <div className="relative">
-              <div className="size-28 rounded-full bg-gray-200 overflow-hidden border border-gray-400 shadow-sm">
-                <img
-                  src={
-                    user?.imageUrl ||
-                    "https://t4.ftcdn.net/jpg/02/15/84/43/360_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg"
-                  }
-                  alt="Profile Pic"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              {/* Settings Icon */}
-              <div
-                onClick={() => {
-                  if (user && isLoaded) {
-                    navigateWithTable("/dashboard");
-                  } else {
-                    sessionStorage.setItem("signInFromMenu", "true");
-                    navigateWithTable("/sign-in");
-                  }
-                }}
-                className="absolute -bottom-1 -right-1 bg-white rounded-full p-1.5 border border-gray-400 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
-              >
-                <Settings className="size-5 text-stone-800" strokeWidth={1.5} />
-              </div>
+            <div className="size-28 rounded-full bg-gray-200 overflow-hidden border border-gray-400 shadow-sm">
+              <img
+                src={
+                  restaurant.logo_url ||
+                  "https://t4.ftcdn.net/jpg/02/15/84/43/360_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg"
+                }
+                alt="Profile Pic"
+                className="w-full h-full object-cover"
+              />
             </div>
             <h1 className="text-black text-3xl font-medium mt-3 mb-6">
               ¡{welcomeMessage}
