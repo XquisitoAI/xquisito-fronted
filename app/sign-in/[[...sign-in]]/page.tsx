@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ScanFace, Mail, KeyRound } from "lucide-react";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
 import { useUser, useSignIn } from "@clerk/nextjs";
+import { usePasskeySupport } from "@/app/hooks/usePasskeySupport";
 
 function SignInContent() {
   const router = useRouter();
@@ -23,6 +24,9 @@ function SignInContent() {
   const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
+  const [passkeyError, setPasskeyError] = useState("");
+  const { isSupported: passkeySupported } = usePasskeySupport();
 
   const tableNumber = searchParams.get("table");
 
@@ -95,6 +99,38 @@ function SignInContent() {
       alert("Contraseña actualizada exitosamente");
     } catch (err: any) {
       setError(err.errors?.[0]?.message || "Error al actualizar la contraseña");
+    }
+  };
+
+  const handlePasskeySignIn = async () => {
+    if (!passkeySupported) {
+      setPasskeyError("Tu navegador no soporta autenticación biométrica");
+      return;
+    }
+
+    setPasskeyLoading(true);
+    setPasskeyError("");
+
+    try {
+      await signIn?.authenticateWithPasskey();
+      // El usuario será redirigido automáticamente por los useEffect existentes
+    } catch (err: any) {
+      console.error("Error en autenticación con Passkey:", err);
+
+      // Mensajes de error en español
+      if (err.code === "passkey_not_found") {
+        setPasskeyError("No tienes ninguna llave de acceso registrada. Registra una desde tu perfil.");
+      } else if (err.code === "passkey_cancelled") {
+        setPasskeyError("Autenticación cancelada");
+      } else if (err.message?.includes("not allowed")) {
+        setPasskeyError("Autenticación no permitida. Intenta nuevamente.");
+      } else {
+        setPasskeyError(
+          err.errors?.[0]?.message || "Error en autenticación biométrica"
+        );
+      }
+    } finally {
+      setPasskeyLoading(false);
     }
   };
 
@@ -286,6 +322,12 @@ function SignInContent() {
                 </label>
               </div>
 
+              {passkeyError && (
+                <div className="text-rose-400 text-xs mb-4 text-center">
+                  {passkeyError}
+                </div>
+              )}
+
               <div className="flex items-center justify-center gap-3 mt-6">
                 <SignIn.Action
                   submit
@@ -293,9 +335,25 @@ function SignInContent() {
                 >
                   Iniciar sesión
                 </SignIn.Action>
-                <div className="p-3 border border-white hover:bg-white/10 rounded-full cursor-pointer">
-                  <ScanFace className="size-6" />
-                </div>
+                {passkeySupported && (
+                  <button
+                    type="button"
+                    onClick={handlePasskeySignIn}
+                    disabled={passkeyLoading}
+                    className={`p-3 border border-white hover:bg-white/10 rounded-full transition-colors ${
+                      passkeyLoading
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer"
+                    }`}
+                    title="Iniciar sesión con Face ID / Touch ID / Windows Hello"
+                  >
+                    {passkeyLoading ? (
+                      <div className="size-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <ScanFace className="size-6" />
+                    )}
+                  </button>
+                )}
               </div>
 
               <button
