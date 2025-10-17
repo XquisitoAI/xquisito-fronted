@@ -197,14 +197,25 @@ class ApiService {
     return null;
   }
 
+  private getRestaurantId(): string | null {
+    // Get restaurant ID from localStorage
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("xquisito-restaurant-id");
+    }
+    return null;
+  }
+
   // Method to explicitly set guest and table info (for better context integration)
-  setGuestInfo(guestId?: string, tableNumber?: string): void {
+  setGuestInfo(guestId?: string, tableNumber?: string, restaurantId?: string): void {
     if (typeof window !== "undefined") {
       if (guestId) {
         localStorage.setItem("xquisito-guest-id", guestId);
       }
       if (tableNumber) {
         localStorage.setItem("xquisito-table-number", tableNumber);
+      }
+      if (restaurantId) {
+        localStorage.setItem("xquisito-restaurant-id", restaurantId);
       }
     }
   }
@@ -216,11 +227,24 @@ class ApiService {
     }
   }
 
+  // Method to set restaurant ID
+  setRestaurantId(restaurantId: string): void {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("xquisito-restaurant-id", restaurantId);
+    }
+  }
+
+  // Method to get current restaurant ID
+  getCurrentRestaurantId(): string | null {
+    return this.getRestaurantId();
+  }
+
   // Method to clear guest session
   clearGuestSession(): void {
     if (typeof window !== "undefined") {
       localStorage.removeItem("xquisito-guest-id");
       localStorage.removeItem("xquisito-table-number");
+      localStorage.removeItem("xquisito-restaurant-id");
     }
   }
 
@@ -231,22 +255,36 @@ class ApiService {
   /**
    * Get table summary information
    */
-  async getTableSummary(tableNumber: string): Promise<ApiResponse<any>> {
-    return this.makeRequest(`/tables/${tableNumber}/summary`);
+  async getTableSummary(restaurantId: string, tableNumber: string): Promise<ApiResponse<any>> {
+    return this.makeRequest(`/restaurants/${restaurantId}/tables/${tableNumber}/summary`);
   }
 
   /**
    * Get table orders
    */
-  async getTableOrders(tableNumber: string): Promise<ApiResponse<any>> {
-    return this.makeRequest(`/tables/${tableNumber}/orders`);
+  async getTableOrders(restaurantId: string, tableNumber: string): Promise<ApiResponse<any>> {
+    return this.makeRequest(`/restaurants/${restaurantId}/tables/${tableNumber}/orders`);
   }
 
   /**
    * Get active users for a table
    */
-  async getActiveUsers(tableNumber: string): Promise<ApiResponse<any>> {
-    return this.makeRequest(`/tables/${tableNumber}/active-users`);
+  async getActiveUsers(restaurantId: string, tableNumber: string): Promise<ApiResponse<any>> {
+    return this.makeRequest(`/restaurants/${restaurantId}/tables/${tableNumber}/active-users`);
+  }
+
+  /**
+   * Get all tables for a restaurant
+   */
+  async getAllTables(restaurantId: string): Promise<ApiResponse<any>> {
+    return this.makeRequest(`/restaurants/${restaurantId}/tables`);
+  }
+
+  /**
+   * Check table availability
+   */
+  async checkTableAvailability(restaurantId: string, tableNumber: string): Promise<ApiResponse<any>> {
+    return this.makeRequest(`/restaurants/${restaurantId}/tables/${tableNumber}/availability`);
   }
 
   // ===============================================
@@ -257,6 +295,7 @@ class ApiService {
    * Create a new dish order for a table
    */
   async createDishOrder(
+    restaurantId: string,
     tableNumber: string,
     userId: string | null,
     guestName: string,
@@ -274,10 +313,9 @@ class ApiService {
         price: number;
       }>;
     }>,
-    extraPrice?: number,
-    restaurantId?: number | null
+    extraPrice?: number
   ): Promise<ApiResponse<any>> {
-    return this.makeRequest(`/tables/${tableNumber}/dishes`, {
+    return this.makeRequest(`/restaurants/${restaurantId}/tables/${tableNumber}/dishes`, {
       method: "POST",
       body: JSON.stringify({
         userId,
@@ -289,7 +327,6 @@ class ApiService {
         images,
         customFields,
         extraPrice,
-        restaurantId,
       }),
     });
   }
@@ -328,16 +365,16 @@ class ApiService {
    * Pay a specific amount for a table
    */
   async payTableAmount(
+    restaurantId: string,
     tableNumber: string,
     amount: number,
     userId?: string | null,
     guestName?: string | null,
     paymentMethodId?: string | null
   ): Promise<ApiResponse<any>> {
-    return this.makeRequest(`/tables/${tableNumber}/pay`, {
+    return this.makeRequest(`/restaurants/${restaurantId}/tables/${tableNumber}/pay`, {
       method: "POST",
       body: JSON.stringify({
-        tableNumber,
         amount,
         userId,
         guestName,
@@ -354,12 +391,13 @@ class ApiService {
    * Initialize split bill for a table
    */
   async initializeSplitBill(
+    restaurantId: string,
     tableNumber: string,
     numberOfPeople: number,
     userIds?: string[] | null,
     guestNames?: string[] | null
   ): Promise<ApiResponse<any>> {
-    return this.makeRequest(`/tables/${tableNumber}/split-bill`, {
+    return this.makeRequest(`/restaurants/${restaurantId}/tables/${tableNumber}/split-bill`, {
       method: "POST",
       body: JSON.stringify({
         numberOfPeople,
@@ -373,15 +411,15 @@ class ApiService {
    * Pay split amount for a table
    */
   async paySplitAmount(
+    restaurantId: string,
     tableNumber: string,
     userId?: string | null,
     guestName?: string | null,
     paymentMethodId?: string | null
   ): Promise<ApiResponse<any>> {
-    return this.makeRequest(`/tables/${tableNumber}/pay-split`, {
+    return this.makeRequest(`/restaurants/${restaurantId}/tables/${tableNumber}/pay-split`, {
       method: "POST",
       body: JSON.stringify({
-        tableNumber,
         userId,
         guestName,
         paymentMethodId,
@@ -392,8 +430,8 @@ class ApiService {
   /**
    * Get split payment status for a table
    */
-  async getSplitPaymentStatus(tableNumber: string): Promise<ApiResponse<any>> {
-    return this.makeRequest(`/tables/${tableNumber}/split-status`);
+  async getSplitPaymentStatus(restaurantId: string, tableNumber: string): Promise<ApiResponse<any>> {
+    return this.makeRequest(`/restaurants/${restaurantId}/tables/${tableNumber}/split-status`);
   }
 
   /**
@@ -402,7 +440,8 @@ class ApiService {
   async linkGuestOrdersToUser(
     guestId: string,
     userId: string,
-    tableNumber?: string
+    tableNumber?: string,
+    restaurantId?: string
   ): Promise<ApiResponse<any>> {
     return this.makeRequest(`/orders/link-user`, {
       method: "PUT",
@@ -410,6 +449,7 @@ class ApiService {
         guestId,
         userId,
         tableNumber,
+        restaurantId,
       }),
     });
   }

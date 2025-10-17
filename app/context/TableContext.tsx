@@ -494,10 +494,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
   // Cargar resumen de la mesa
   const loadTableSummary = async () => {
-    if (!state.tableNumber) return;
+    if (!state.tableNumber || !restaurantId) return;
 
     try {
-      const response = await apiService.getTableSummary(state.tableNumber);
+      const response = await apiService.getTableSummary(restaurantId.toString(), state.tableNumber);
 
       if (response.success && response.data) {
         dispatch({ type: "SET_TABLE_SUMMARY", payload: response });
@@ -510,16 +510,14 @@ export function TableProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       dispatch({ type: "SET_ERROR", payload: "Network error occurred" });
     }
-
-    //debugger
   };
 
   // Cargar órdenes de platillos
   const loadDishOrders = async () => {
-    if (!state.tableNumber) return;
+    if (!state.tableNumber || !restaurantId) return;
 
     try {
-      const response = await apiService.getTableOrders(state.tableNumber);
+      const response = await apiService.getTableOrders(restaurantId.toString(), state.tableNumber);
 
       if (response.success && Array.isArray(response?.data?.data)) {
         const dishOrders = response.data.data;
@@ -537,10 +535,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
   // Cargar usuarios activos
   const loadActiveUsers = async () => {
-    if (!state.tableNumber) return;
+    if (!state.tableNumber || !restaurantId) return;
 
     try {
-      const response = await apiService.getActiveUsers(state.tableNumber);
+      const response = await apiService.getActiveUsers(restaurantId.toString(), state.tableNumber);
 
       if (response.success && response.data) {
         dispatch({ type: "SET_ACTIVE_USERS", payload: response.data });
@@ -552,7 +550,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
   // Cargar pagos divididos
   const loadSplitPayments = async () => {
-    if (!state.tableNumber) return;
+    if (!state.tableNumber || !restaurantId) return;
 
     console.log(
       "🔄 TableContext: Loading split payments for table:",
@@ -561,6 +559,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await apiService.getSplitPaymentStatus(
+        restaurantId.toString(),
         state.tableNumber
       );
 
@@ -586,17 +585,19 @@ export function TableProvider({ children }: { children: ReactNode }) {
   // Función para enviar orden (adaptada al nuevo sistema)
   // Función helper para recalcular el split bill automáticamente
   const recalculateSplitBill = async () => {
-    if (!state.tableNumber) return;
+    if (!state.tableNumber || !restaurantId) return;
 
     try {
       // Verificar si hay un split status activo
       const splitResponse = await apiService.getSplitPaymentStatus(
+        restaurantId.toString(),
         state.tableNumber
       );
 
       if (splitResponse.success && splitResponse.data?.data) {
         // Hay split activo, obtener active users actualizados
         const activeUsersResponse = await apiService.getActiveUsers(
+          restaurantId.toString(),
           state.tableNumber
         );
 
@@ -632,6 +633,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       } else {
         // No hay split activo, intentar inicializar si hay múltiples active users
         const activeUsersResponse = await apiService.getActiveUsers(
+          restaurantId.toString(),
           state.tableNumber
         );
 
@@ -716,6 +718,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       // Crear órdenes de platillos con la cantidad correcta
       for (const item of state.currentUserItems) {
         const response = await apiService.createDishOrder(
+          restaurantId?.toString() || "1", // restaurantId del contexto
           state.tableNumber,
           userId, // userId de Clerk si está autenticado, null si es invitado
           displayName, // Nombre real o guest name
@@ -725,8 +728,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
           guestId, // guestId solo si es invitado
           item.images,
           item.customFields, // custom fields seleccionados
-          item.extraPrice, // precio extra por custom fields
-          restaurantId // restaurantId del contexto
+          item.extraPrice // precio extra por custom fields
         );
 
         if (!response.success) {
@@ -819,10 +821,12 @@ export function TableProvider({ children }: { children: ReactNode }) {
       }
 
       const response = await apiService.payTableAmount(
+        restaurantId?.toString() || "1",
         state.tableNumber,
         amount,
         finalUserId,
-        finalGuestName
+        finalGuestName,
+        null
       );
 
       if (response.success) {
@@ -860,6 +864,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       if (!userIds && !guestNames) {
         // Obtener active users de la mesa
         const activeUsersResponse = await apiService.getActiveUsers(
+          restaurantId?.toString() || "1",
           state.tableNumber
         );
 
@@ -883,6 +888,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       }
 
       const response = await apiService.initializeSplitBill(
+        restaurantId?.toString() || "1",
         state.tableNumber,
         numberOfPeople,
         finalUserIds,
@@ -911,9 +917,11 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await apiService.paySplitAmount(
+        restaurantId?.toString() || "1",
         state.tableNumber,
         userId,
-        guestName
+        guestName,
+        null
       );
 
       if (response.success) {

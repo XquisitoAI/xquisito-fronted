@@ -236,6 +236,7 @@ export default function CardSelectionPage() {
         try {
           if (user && user.id) {
             await apiService.paySplitAmount(
+              restaurantId,
               state.tableNumber,
               user.id,
               null,
@@ -243,6 +244,7 @@ export default function CardSelectionPage() {
             );
           } else if (isGuest && name.trim()) {
             await apiService.paySplitAmount(
+              restaurantId,
               state.tableNumber,
               null,
               name.trim(),
@@ -260,6 +262,7 @@ export default function CardSelectionPage() {
         try {
           if (user && user.id) {
             await apiService.payTableAmount(
+              restaurantId,
               state.tableNumber,
               baseAmount,
               user.id,
@@ -269,6 +272,7 @@ export default function CardSelectionPage() {
             console.log("hollaaaaaaaaaaa");
           } else {
             await apiService.payTableAmount(
+              restaurantId,
               state.tableNumber,
               baseAmount,
               null,

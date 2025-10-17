@@ -83,6 +83,7 @@ export interface DishOrder {
 }
 
 export interface TableSummary {
+  restaurant_id: number;
   table_number: number;
   total_amount: number;
   paid_amount: number;
@@ -92,6 +93,7 @@ export interface TableSummary {
 }
 
 export interface ActiveUser {
+  restaurant_id: number;
   table_number: number;
   user_id?: string;
   guest_name: string;
@@ -339,9 +341,18 @@ export { apiService as tableApi };
 
 // Legacy compatibility - redirect old tableApi usage to new apiService
 export const legacyTableApi = {
-  // Deprecated: use apiService.getTableSummary() instead
-  getTableOrders: (tableNumber: number) =>
-    apiService.getTableOrders(tableNumber.toString()),
+  // Deprecated: use apiService.getTableSummary(restaurantId, tableNumber) instead
+  getTableOrders: (tableNumber: number) => {
+    console.warn(
+      "getTableOrders without restaurantId is deprecated. Use getTableOrders(restaurantId, tableNumber) instead."
+    );
+    // Get restaurantId from apiService
+    const restaurantId = apiService.getCurrentRestaurantId();
+    if (!restaurantId) {
+      throw new Error("Restaurant ID not set. Please set restaurant ID first.");
+    }
+    return apiService.getTableOrders(restaurantId, tableNumber.toString());
+  },
 
   // Deprecated: use apiService.createDishOrder() instead
   createUserOrder: (tableNumber: number, orderData: any) =>

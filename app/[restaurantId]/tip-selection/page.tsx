@@ -42,6 +42,7 @@ export default function TipSelectionPage() {
 
     try {
       const response = await apiService.getSplitPaymentStatus(
+        restaurantId.toString(),
         state.tableNumber.toString()
       );
       if (response.success) {

@@ -162,7 +162,7 @@ body {
 }
 
 .animate-fade-in {
-  animation: fade-in 0.1s ease-in;
+  animation: fade-in 0.3s ease-in;
 }
 
 .animate-simple-fade-in {

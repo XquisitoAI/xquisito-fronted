@@ -69,6 +69,7 @@ export default function PaymentOptionsPage() {
 
     try {
       const response = await apiService.getSplitPaymentStatus(
+        restaurantId.toString(),
         state.tableNumber.toString()
       );
       console.log("📡 Split status API response:", response);

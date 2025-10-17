@@ -37,16 +37,23 @@ export function GuestProvider({ children }: GuestProviderProps) {
 
     const storedGuestId = localStorage.getItem('xquisito-guest-id');
     const storedTableNumber = localStorage.getItem('xquisito-table-number');
+    const storedRestaurantId = localStorage.getItem('xquisito-restaurant-id');
 
     if (storedGuestId && user.id) {
       console.log('🔗 Linking guest orders to authenticated user:', {
         guestId: storedGuestId,
         userId: user.id,
-        tableNumber: storedTableNumber
+        tableNumber: storedTableNumber,
+        restaurantId: storedRestaurantId
       });
 
       apiService
-        .linkGuestOrdersToUser(storedGuestId, user.id, storedTableNumber || undefined)
+        .linkGuestOrdersToUser(
+          storedGuestId,
+          user.id,
+          storedTableNumber || undefined,
+          storedRestaurantId || undefined
+        )
         .then((response) => {
           if (response.success) {
             console.log('✅ Guest orders linked successfully:', response.data);
