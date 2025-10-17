@@ -75,6 +75,7 @@ export default function PaymentSuccessPage() {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [isBreakdownModalOpen, setIsBreakdownModalOpen] = useState(false);
+  const [hasRated, setHasRated] = useState(false); // Track if user has already rated
   const { restaurant } = useRestaurant();
 
   useEffect(() => {
@@ -176,6 +177,53 @@ export default function PaymentSuccessPage() {
     navigateWithTable("/menu");
   };
 
+  // Handle rating submission
+  const handleRatingClick = async (starRating: number) => {
+    if (hasRated) {
+      console.log("⚠️ User has already rated");
+      return;
+    }
+
+    setRating(starRating);
+
+    if (!restaurantId) {
+      console.error("❌ No restaurant ID available");
+      return;
+    }
+
+    try {
+      console.log("🔍 Submitting restaurant review:", {
+        restaurant_id: parseInt(restaurantId),
+        rating: starRating,
+      });
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/restaurants/restaurant-reviews`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            restaurant_id: parseInt(restaurantId),
+            rating: starRating,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log("✅ Restaurant review submitted successfully");
+        setHasRated(true);
+      } else {
+        console.error("❌ Failed to submit restaurant review:", data.message);
+      }
+    } catch (error) {
+      console.error("❌ Error submitting restaurant review:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
       {/* Success Icon */}
@@ -204,7 +252,9 @@ export default function PaymentSuccessPage() {
             {/* Rating Prompt */}
             <div className="text-center mb-8">
               <p className="text-xl font-medium text-black mb-2">
-                Califica tu pedido y gana recompensas exclusivas
+                {hasRated
+                  ? "¡Gracias por tu calificación!"
+                  : "Califica tu experiencia en el restaurante"}
               </p>
               <div className="flex justify-center gap-1">
                 {[1, 2, 3, 4, 5].map((starIndex) => {
@@ -214,14 +264,18 @@ export default function PaymentSuccessPage() {
                   return (
                     <div
                       key={starIndex}
-                      className="relative cursor-pointer"
-                      onMouseEnter={() => setHoveredRating(starIndex)}
-                      onMouseLeave={() => setHoveredRating(0)}
-                      onClick={() => setRating(starIndex)}
+                      className={`relative ${
+                        hasRated ? "cursor-default" : "cursor-pointer"
+                      }`}
+                      onMouseEnter={() =>
+                        !hasRated && setHoveredRating(starIndex)
+                      }
+                      onMouseLeave={() => !hasRated && setHoveredRating(0)}
+                      onClick={() => !hasRated && handleRatingClick(starIndex)}
                     >
                       {/* Estrella */}
                       <svg
-                        className={`size-8 ${
+                        className={`size-8 transition-all ${
                           isFilled ? "text-yellow-400" : "text-white"
                         }`}
                         fill="currentColor"
@@ -349,7 +403,7 @@ export default function PaymentSuccessPage() {
                       ) : (
                         <CreditCard className="w-4 h-4 text-gray-700" />
                       )}
-                      <span className="text-sm font-mono">
+                      <span className="text-sm">
                         **** **** **** {paymentDetails.cardLast4}
                       </span>
                     </div>
