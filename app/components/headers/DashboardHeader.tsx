@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import GlassSurface from "@/app/components/UI/GlassSurface";
-import { useTableNavigation } from "../hooks/useTableNavigation";
+import { useTableNavigation } from "../../hooks/useTableNavigation";
 
 export default function DashboardHeader() {
   const { navigateWithTable } = useTableNavigation();

@@ -15,6 +15,11 @@ import {
   ActiveUser,
   SplitPayment,
 } from "../services/tableApi";
+
+// Tipo para respuestas con estructura anidada { data: { data: T } }
+interface NestedDataResponse<T> {
+  data: T;
+}
 import { useUser } from "@clerk/nextjs";
 import { useRestaurant } from "./RestaurantContext";
 
@@ -67,7 +72,7 @@ export interface CartItem extends MenuItemData {
 // Nuevo estado de la mesa basado en platillos
 interface TableState {
   tableNumber: string;
-  tableSummary: ApiResponse<TableSummary> | null;
+  tableSummary: ApiResponse<NestedDataResponse<TableSummary>> | null;
   dishOrders: DishOrder[];
   activeUsers: ActiveUser[];
   splitPayments: SplitPayment[];
@@ -122,7 +127,7 @@ type TableAction =
   | { type: "CLEAR_CURRENT_USER_CART" }
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "SET_ERROR"; payload: string | null }
-  | { type: "SET_TABLE_SUMMARY"; payload: ApiResponse<TableSummary> | null }
+  | { type: "SET_TABLE_SUMMARY"; payload: ApiResponse<NestedDataResponse<TableSummary>> | null }
   | { type: "SET_DISH_ORDERS"; payload: DishOrder[] }
   | { type: "SET_ACTIVE_USERS"; payload: ActiveUser[] }
   | { type: "SET_SPLIT_PAYMENTS"; payload: SplitPayment[] }

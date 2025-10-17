@@ -1,13 +1,13 @@
 "use client";
 
-import { Restaurant } from "../interfaces/restaurante";
-import { useTable } from "../context/TableContext";
-import { useTableNavigation } from "../hooks/useTableNavigation";
+import { Restaurant } from "../../interfaces/restaurante";
+import { useTable } from "../../context/TableContext";
+import { useTableNavigation } from "../../hooks/useTableNavigation";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronLeft, X } from "lucide-react";
+import { ShoppingCart, Receipt, ChevronLeft, X } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
-import { apiService } from "../utils/api";
+import { apiService } from "../../utils/api";
 
 interface MenuHeaderProps {
   restaurant: Restaurant;
@@ -21,7 +21,7 @@ interface UserImageData {
   fullName: string | null;
 }
 
-export default function MenuHeaderBackOrder({
+export default function MenuHeaderBack({
   restaurant,
   tableNumber,
 }: MenuHeaderProps) {
@@ -36,7 +36,11 @@ export default function MenuHeaderBackOrder({
   const { user, isLoaded } = useUser();
 
   const handleBack = () => {
-    navigateWithTable("/menu");
+    router.back();
+  };
+
+  const handleCartClick = () => {
+    navigateWithTable("/cart");
   };
 
   // Extraer user_ids únicos y memoizarlos

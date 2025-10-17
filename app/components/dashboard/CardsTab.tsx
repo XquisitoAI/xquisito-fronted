@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, JSX } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePayment } from "@/app/context/PaymentContext";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
@@ -11,14 +11,9 @@ import {
   Star,
   StarOff,
   AlertTriangle,
-  LoaderIcon,
+  Loader2,
 } from "lucide-react";
-import {
-  Mastercard,
-  Visa,
-  Amex,
-  Discover,
-} from "react-payment-logos/dist/logo";
+import { getCardTypeIcon } from "@/app/utils/cardIcons";
 
 export default function CardsTab() {
   const router = useRouter();
@@ -64,40 +59,6 @@ export default function CardsTab() {
     }
   };
 
-  function getCardIcon(cardType: string): JSX.Element {
-    const type = cardType.toLowerCase();
-
-    switch (type) {
-      case "visa":
-        return <Visa style={{ width: "56px", height: "35px" }} />;
-      case "mastercard":
-        return <Mastercard style={{ width: "56px", height: "35px" }} />;
-      case "amex":
-        return <Amex style={{ width: "56px", height: "35px" }} />;
-      case "discover":
-        return <Discover style={{ width: "56px", height: "35px" }} />;
-      default:
-        return (
-          <div
-            style={{
-              width: "56px",
-              height: "35px",
-              background: "linear-gradient(to right, #3b82f6, #a855f7)",
-              borderRadius: "4px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontSize: "10px",
-              fontWeight: "bold",
-            }}
-          >
-            💳
-          </div>
-        );
-    }
-  }
-
   return (
     <div className="h-full flex flex-1 flex-col">
       <div className="flex-1"></div>
@@ -105,7 +66,7 @@ export default function CardsTab() {
         {/* Loading State */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <LoaderIcon className="size-8 animate-spin text-teal-600" />
+            <Loader2 className="size-8 animate-spin text-teal-600" />
           </div>
         ) : (
           <>
@@ -132,7 +93,7 @@ export default function CardsTab() {
                       <div className="flex items-center gap-2 mx-auto">
                         <div>
                           <span className="text-2xl">
-                            {getCardIcon(method.cardType)}
+                            {getCardTypeIcon(method.cardType, "medium")}
                           </span>
                         </div>
 
@@ -159,7 +120,7 @@ export default function CardsTab() {
                             title="Establecer como predeterminada"
                           >
                             {settingDefaultId === method.id ? (
-                              <LoaderIcon className="size-5 animate-spin" />
+                              <Loader2 className="size-5 animate-spin" />
                             ) : (
                               <StarOff className="size-5" />
                             )}
@@ -183,7 +144,7 @@ export default function CardsTab() {
                           title="Eliminar tarjeta"
                         >
                           {deletingCardId === method.id ? (
-                            <LoaderIcon className="size-5 animate-spin" />
+                            <Loader2 className="size-5 animate-spin" />
                           ) : (
                             <Trash2 className="size-5" />
                           )}

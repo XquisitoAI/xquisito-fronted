@@ -7,55 +7,16 @@ import { useGuest, useIsGuest } from "../../context/GuestContext";
 import { usePayment } from "../../context/PaymentContext";
 import { useRestaurant } from "../../context/RestaurantContext";
 import { getRestaurantData } from "../../utils/restaurantData";
-import { useEffect, useState, JSX } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useEcartPay } from "../../hooks/useEcartPay";
-import MenuHeaderBack from "../../components/MenuHeaderBack";
+import MenuHeaderBack from "../../components/headers/MenuHeaderBack";
 import { apiService } from "../../utils/api";
 import PaymentAnimation from "../../components/UI/PaymentAnimation";
+import Loader from "../../components/UI/Loader";
 
-import {
-  Mastercard,
-  Visa,
-  Amex,
-  Discover,
-} from "react-payment-logos/dist/logo";
-import { Plus, Trash2, LoaderIcon } from "lucide-react";
-
-// Utility function to get card type icon
-function getCardTypeIcon(cardType: string): JSX.Element {
-  const type = cardType.toLowerCase();
-
-  switch (type) {
-    case "visa":
-      return <Visa style={{ width: "56px", height: "35px" }} />;
-    case "mastercard":
-      return <Mastercard style={{ width: "56px", height: "35px" }} />;
-    case "amex":
-      return <Amex style={{ width: "56px", height: "35px" }} />;
-    case "discover":
-      return <Discover style={{ width: "56px", height: "35px" }} />;
-    default:
-      return (
-        <div
-          style={{
-            width: "56px",
-            height: "35px",
-            background: "linear-gradient(to right, #3b82f6, #a855f7)",
-            borderRadius: "4px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            fontSize: "10px",
-            fontWeight: "bold",
-          }}
-        >
-          💳
-        </div>
-      );
-  }
-}
+import { Plus, Trash2, Loader2 } from "lucide-react";
+import { getCardTypeIcon } from "../../utils/cardIcons";
 
 export default function CardSelectionPage() {
   const params = useParams();
@@ -120,6 +81,7 @@ export default function CardSelectionPage() {
   const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
   const [showPaymentAnimation, setShowPaymentAnimation] = useState(false);
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -177,17 +139,22 @@ export default function CardSelectionPage() {
     return sum + (dish.total_price || 0);
   }, 0);
 
-  // Set default payment method when payment methods are loaded
+  // Set default payment method when payment methods are loaded (only once)
   useEffect(() => {
     if (hasPaymentMethods && paymentMethods.length > 0) {
-      const defaultMethod =
-        paymentMethods.find((pm) => pm.isDefault) || paymentMethods[0];
-      setSelectedPaymentMethodId(defaultMethod.id);
+      // Solo establecer la tarjeta por defecto si no hay ninguna seleccionada
+      if (!selectedPaymentMethodId) {
+        const defaultMethod =
+          paymentMethods.find((pm) => pm.isDefault) || paymentMethods[0];
+        setSelectedPaymentMethodId(defaultMethod.id);
+      }
       setPaymentMethodType("saved");
     } else {
       setPaymentMethodType("new");
       setSelectedPaymentMethodId(null);
     }
+    // Set loading to false once we have payment methods data
+    setIsLoadingInitial(false);
   }, [hasPaymentMethods, paymentMethods]);
 
   const handlePaymentSuccess = async (
@@ -349,6 +316,9 @@ export default function CardSelectionPage() {
       alert("Por favor selecciona una tarjeta de pago");
       return;
     }
+
+    setIsProcessing(true);
+
     try {
       // Set guest and table info for API service
       if (isGuest && guestId) {
@@ -577,6 +547,10 @@ export default function CardSelectionPage() {
     }
   };
 
+  if (isLoadingInitial) {
+    return <Loader />;
+  }
+
   return (
     <>
       <PaymentAnimation
@@ -763,7 +737,7 @@ export default function CardSelectionPage() {
                             title="Eliminar tarjeta"
                           >
                             {deletingCardId === method.id ? (
-                              <LoaderIcon className="size-5 animate-spin" />
+                              <Loader2 className="size-5 animate-spin" />
                             ) : (
                               <Trash2 className="size-5" />
                             )}
@@ -799,20 +773,27 @@ export default function CardSelectionPage() {
                 onClick={handlePayment}
                 disabled={
                   paymentLoading ||
+                  isProcessing ||
                   (hasPaymentMethods && !selectedPaymentMethodId)
                 }
                 className={`w-full text-white py-3 rounded-full cursor-pointer transition-colors ${
                   paymentLoading ||
+                  isProcessing ||
                   (hasPaymentMethods && !selectedPaymentMethodId)
                     ? "bg-stone-800 cursor-not-allowed"
                     : "bg-black hover:bg-stone-950"
                 }`}
               >
-                {paymentLoading
-                  ? "Procesando pago..."
-                  : hasPaymentMethods && !selectedPaymentMethodId
-                    ? "Selecciona una tarjeta"
-                    : "Pagar"}
+                {paymentLoading || isProcessing ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Procesando pago...</span>
+                  </div>
+                ) : hasPaymentMethods && !selectedPaymentMethodId ? (
+                  "Selecciona una tarjeta"
+                ) : (
+                  "Pagar"
+                )}
               </button>
             </div>
           </div>

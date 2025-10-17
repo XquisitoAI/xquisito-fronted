@@ -21,6 +21,11 @@ export interface ReviewStats {
   last_review_date: string;
 }
 
+// Wrapper type para respuestas del backend que tienen estructura anidada { data: { data: T } }
+export interface NestedApiResponse<T> {
+  data: T;
+}
+
 // Acceso al método privado makeRequest a través de casting
 export const reviewsApi = {
   // Crear una review
@@ -48,7 +53,7 @@ export const reviewsApi = {
   // Obtener estadísticas de un platillo
   async getMenuItemStats(
     menuItemId: number
-  ): Promise<ApiResponse<ReviewStats>> {
+  ): Promise<ApiResponse<NestedApiResponse<ReviewStats>>> {
     return (apiService as any).makeRequest(
       `/restaurants/reviews/menu-item/${menuItemId}/stats`
     );
@@ -59,7 +64,7 @@ export const reviewsApi = {
     menuItemId: number,
     userId: string | null,
     guestId: string | null
-  ): Promise<ApiResponse<Review | null>> {
+  ): Promise<ApiResponse<NestedApiResponse<Review | null>>> {
     // Agregar guest_id como query param si existe
     const queryParam = userId || guestId;
 

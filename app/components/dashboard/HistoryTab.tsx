@@ -1,6 +1,6 @@
 "use client";
 
-import { JSX, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
   Loader2,
@@ -10,46 +10,7 @@ import {
   CreditCard,
   Utensils,
 } from "lucide-react";
-import {
-  Amex,
-  Discover,
-  Mastercard,
-  Visa,
-} from "react-payment-logos/dist/logo";
-
-function getCardIcon(cardType: string): JSX.Element {
-  const type = cardType.toLowerCase();
-
-  switch (type) {
-    case "visa":
-      return <Visa style={{ width: "45px", height: "28px" }} />;
-    case "mastercard":
-      return <Mastercard style={{ width: "45px", height: "28px" }} />;
-    case "amex":
-      return <Amex style={{ width: "45px", height: "28px" }} />;
-    case "discover":
-      return <Discover style={{ width: "45px", height: "28px" }} />;
-    default:
-      return (
-        <div
-          style={{
-            width: "45px",
-            height: "28px",
-            background: "linear-gradient(to right, #3b82f6, #a855f7)",
-            borderRadius: "4px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            fontSize: "10px",
-            fontWeight: "bold",
-          }}
-        >
-          💳
-        </div>
-      );
-  }
-}
+import { getCardTypeIcon } from "@/app/utils/cardIcons";
 
 interface OrderHistoryItem {
   dishOrderId: number;
@@ -356,8 +317,11 @@ export default function HistoryTab() {
                   </div>
                   {selectedOrderDetails.orders[0]?.paymentCardType && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      {getCardIcon(
-                        selectedOrderDetails.orders[0].paymentCardType
+                      {getCardTypeIcon(
+                        selectedOrderDetails.orders[0].paymentCardType,
+                        "small",
+                        45,
+                        28
                       )}
                       <span className="text-sm">
                         •••• •••• ••••{" "}

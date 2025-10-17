@@ -7,7 +7,7 @@ import { useUser } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import { getRestaurantData } from "../utils/restaurantData";
 import { Loader2, Eye, EyeClosed, Loader } from "lucide-react";
-import MenuHeaderBackOrder from "./MenuHeaderBackOrder";
+import MenuHeaderBackOrder from "./headers/MenuHeaderBackOrder";
 
 export default function OrderStatus() {
   const { state, loadTableData } = useTable();
@@ -493,6 +493,7 @@ export default function OrderStatus() {
                       {isProcessingPayment ? (
                         <div className="flex items-center justify-center gap-2">
                           <Loader2 className="h-5 w-5 animate-spin" />
+                          <span>Cargando...</span>
                         </div>
                       ) : tableRemainingAmount <= 0 ? (
                         "¡Cuenta pagada completamente!"

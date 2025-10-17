@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useTable, CartItem } from "../../context/TableContext";
 import { useRestaurant } from "../../context/RestaurantContext";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
-import Loader from "@/app/components/Loader";
+import Loader from "@/app/components/UI/Loader";
 import { useUser } from "@clerk/nextjs";
 
 interface OrderAnimationProps {

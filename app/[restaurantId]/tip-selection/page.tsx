@@ -6,9 +6,10 @@ import { useTable } from "../../context/TableContext";
 import { useTableNavigation } from "../../hooks/useTableNavigation";
 import { useRestaurant } from "../../context/RestaurantContext";
 import { getRestaurantData } from "../../utils/restaurantData";
-import MenuHeaderBack from "../../components/MenuHeaderBack";
-import { Check, CircleAlert, X } from "lucide-react";
+import MenuHeaderBack from "../../components/headers/MenuHeaderBack";
+import { Check, CircleAlert, Loader2, X } from "lucide-react";
 import { apiService } from "../../utils/api";
+import Loader from "../../components/UI/Loader";
 
 export default function TipSelectionPage() {
   const params = useParams();
@@ -36,6 +37,8 @@ export default function TipSelectionPage() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [splitStatus, setSplitStatus] = useState<any>(null);
   const [showTotalModal, setShowTotalModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const loadSplitStatus = async () => {
     if (!state.tableNumber) return;
@@ -58,10 +61,15 @@ export default function TipSelectionPage() {
 
   // Recargar datos de la mesa para asegurar montos actualizados
   useEffect(() => {
-    if (state.tableNumber) {
-      loadTableData();
-      loadSplitStatus();
-    }
+    const loadData = async () => {
+      if (state.tableNumber) {
+        setIsLoading(true);
+        await loadTableData();
+        await loadSplitStatus();
+        setIsLoading(false);
+      }
+    };
+    loadData();
   }, [state.tableNumber]);
 
   // Inicializar customPaymentAmount para choose-amount
@@ -191,6 +199,7 @@ export default function TipSelectionPage() {
   };
 
   const handleContinueToCardSelection = () => {
+    setIsNavigating(true);
     const queryParams = new URLSearchParams({
       type: paymentType,
       amount: paymentAmount.toString(), // Total con propina, comisión e IVA para eCardPay
@@ -250,6 +259,10 @@ export default function TipSelectionPage() {
   };
 
   const paymentDetails = getPaymentDetails();
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
@@ -558,23 +571,30 @@ export default function TipSelectionPage() {
             return (
               <button
                 onClick={handleContinueToCardSelection}
-                disabled={isDisabled}
+                disabled={isDisabled || isNavigating}
                 className={`w-full text-white py-3 rounded-full cursor-pointer transition-colors ${
-                  isDisabled
-                    ? "bg-gray-400 cursor-not-allowed"
+                  isDisabled || isNavigating
+                    ? "bg-stone-800 cursor-not-allowed"
                     : "bg-black hover:bg-stone-950"
                 }`}
               >
-                {paymentType === "choose-amount" &&
-                (!customPaymentAmount || parseFloat(customPaymentAmount) <= 0)
-                  ? "Introduce un monto"
-                  : paymentType === "choose-amount" &&
-                      parseFloat(customPaymentAmount) > maxAllowedAmount
-                    ? "Monto excede el máximo permitido"
-                    : paymentType === "select-items" &&
-                        selectedItems.length === 0
-                      ? "Selecciona al menos un artículo"
-                      : "Pagar"}
+                {isNavigating ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Cargando...</span>
+                  </div>
+                ) : paymentType === "choose-amount" &&
+                  (!customPaymentAmount || parseFloat(customPaymentAmount) <= 0) ? (
+                  "Introduce un monto"
+                ) : paymentType === "choose-amount" &&
+                  parseFloat(customPaymentAmount) > maxAllowedAmount ? (
+                  "Monto excede el máximo permitido"
+                ) : paymentType === "select-items" &&
+                  selectedItems.length === 0 ? (
+                  "Selecciona al menos un artículo"
+                ) : (
+                  "Pagar"
+                )}
               </button>
             );
           })()}

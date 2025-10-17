@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import Loader from "./Loader";
+import Loader from "./UI/Loader";
 import ProfileTab from "./dashboard/ProfileTab";
 import CardsTab from "./dashboard/CardsTab";
 import HistoryTab from "./dashboard/HistoryTab";
 import SupportTab from "./dashboard/SupportTab";
-import DashboardHeader from "./DashboardHeader";
+import DashboardHeader from "./headers/DashboardHeader";
 
 export default function DashboardView() {
   const [activeTab, setActiveTab] = useState<

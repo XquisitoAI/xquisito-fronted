@@ -5,7 +5,7 @@ import { Minus, Plus } from "lucide-react";
 import { useTable, CartItem } from "../context/TableContext";
 import { useTableNavigation } from "../hooks/useTableNavigation";
 import { getRestaurantData } from "../utils/restaurantData";
-import MenuHeaderBack from "./MenuHeaderBack";
+import MenuHeaderBack from "./headers/MenuHeaderBack";
 import OrderAnimation from "./UI/OrderAnimation";
 import { useUser } from "@clerk/nextjs";
 
@@ -28,7 +28,8 @@ export default function CartView() {
         // Mostrar animación de orden INMEDIATAMENTE
         setShowOrderAnimation(true);
         // Enviar la orden a la API en segundo plano usando el nombre completo de Clerk
-        const userName = user.fullName || user.firstName || user.username || "Usuario";
+        const userName =
+          user.fullName || user.firstName || user.username || "Usuario";
         await submitOrder(userName);
       } catch (error) {
         console.error("Error submitting order:", error);
@@ -233,7 +234,9 @@ export default function CartView() {
       {/* OrderAnimation overlay - solo para usuarios loggeados */}
       {showOrderAnimation && (
         <OrderAnimation
-          userName={user?.fullName || user?.firstName || user?.username || "Usuario"}
+          userName={
+            user?.fullName || user?.firstName || user?.username || "Usuario"
+          }
           orderedItems={orderedItems}
           onContinue={handleContinueFromAnimation}
         />

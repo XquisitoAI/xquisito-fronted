@@ -10,7 +10,7 @@ import { useUserSync } from "../../hooks/useUserSync";
 import { useRestaurant } from "../../context/RestaurantContext";
 import { getRestaurantData } from "../../utils/restaurantData";
 import { getSavedUrlParams, clearSavedUrlParams } from "../../utils/urlParams";
-import MenuHeaderBack from "../../components/MenuHeaderBack";
+import MenuHeaderBack from "../../components/headers/MenuHeaderBack";
 import { apiService } from "../../utils/api";
 import {
   ChevronRight,
@@ -20,7 +20,7 @@ import {
   ReceiptText,
   Users,
 } from "lucide-react";
-import Loader from "../../components/Loader";
+import Loader from "../../components/UI/Loader";
 
 export default function PaymentOptionsPage() {
   const params = useParams();
@@ -402,7 +402,6 @@ export default function PaymentOptionsPage() {
                         alt=""
                         className="rounded-sm"
                       />
-                      {/*<ListTodo className="text-black size-9" strokeWidth={1} />*/}
                     </div>
                     <div className="flex-1 text-left">
                       <h3 className="text-black">Seleccionar artículos</h3>
@@ -427,7 +426,6 @@ export default function PaymentOptionsPage() {
                         alt=""
                         className="size-9"
                       />
-                      {/*<Users className="text-black size-9" strokeWidth={1} />*/}
                     </div>
                     <div className="flex-1 text-left">
                       <h3 className="text-black">Dividir cuenta</h3>

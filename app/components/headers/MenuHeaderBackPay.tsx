@@ -1,13 +1,13 @@
 "use client";
 
-import { Restaurant } from "../interfaces/restaurante";
-import { useTable } from "../context/TableContext";
-import { useTableNavigation } from "../hooks/useTableNavigation";
+import { Restaurant } from "../../interfaces/restaurante";
+import { useTable } from "../../context/TableContext";
+import { useTableNavigation } from "../../hooks/useTableNavigation";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeft, X } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
-import { apiService } from "../utils/api";
+import { apiService } from "../../utils/api";
 
 interface MenuHeaderProps {
   restaurant: Restaurant;

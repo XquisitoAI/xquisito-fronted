@@ -6,8 +6,8 @@ import { useTable } from "../../../context/TableContext";
 import { useTableNavigation } from "../../../hooks/useTableNavigation";
 import { useRestaurant } from "../../../context/RestaurantContext";
 import { ChevronDown, X } from "lucide-react";
-import MenuHeaderDish from "@/app/components/MenuHeaderDish";
-import Loader from "@/app/components/Loader";
+import MenuHeaderDish from "@/app/components/headers/MenuHeaderDish";
+import Loader from "@/app/components/UI/Loader";
 import RestaurantClosedModal from "@/app/components/RestaurantClosedModal";
 import {
   MenuItem as MenuItemDB,
@@ -44,6 +44,7 @@ export default function DishDetailPage() {
   const [dishStats, setDishStats] = useState<ReviewStats | null>(null);
   const [myReview, setMyReview] = useState<Review | null>(null);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true);
   const { isLoaded, user } = useUser();
 
   // Buscar el dish en el menú del contexto
@@ -189,8 +190,10 @@ export default function DishDetailPage() {
   useEffect(() => {
     if (dishId && !isNaN(dishId)) {
       console.log("🔄 Loading reviews for dish:", dishId);
-      loadDishStats();
-      loadMyReview();
+      setIsLoadingReviews(true);
+      Promise.all([loadDishStats(), loadMyReview()]).finally(() => {
+        setIsLoadingReviews(false);
+      });
     }
   }, [dishId]);
 
@@ -588,41 +591,55 @@ export default function DishDetailPage() {
         <div className="bg-white rounded-t-4xl flex flex-col px-6">
           <div className="mt-8">
             <div className="flex justify-between items-center text-black mb-6">
-              <div className="flex items-center gap-1.5">
-                <svg
-                  className="size-6 text-black"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-                {dishStats && dishStats.total_reviews > 0 ? (
-                  <>
-                    <span className="text-lg">
-                      {dishStats.average_rating.toFixed(1)}
-                    </span>
-                    <span className="text-xs text-gray-600">
-                      ({dishStats.total_reviews})
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-sm text-gray-600">Sin reseñas</span>
-                )}
-              </div>
-              <button
-                onClick={() => {
-                  // Si ya hay una review, pre-llenar el rating
-                  if (myReview) {
-                    setReviewRating(myReview.rating);
-                  } else {
-                    setReviewRating(0);
-                  }
-                  setIsReviewModalOpen(true);
-                }}
-                className="underline text-black"
-              >
-                {myReview ? "Editar mi reseña" : "Comparte tu reseña"}
-              </button>
+              {isLoadingReviews ? (
+                <>
+                  {/* Skeleton para el rating */}
+                  <div className="flex items-center gap-1.5">
+                    <div className="size-6 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-5 w-8 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                  {/* Skeleton para el botón */}
+                  <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-1.5">
+                    <svg
+                      className="size-6 text-black"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                    {dishStats && dishStats.total_reviews > 0 ? (
+                      <>
+                        <span className="text-lg">
+                          {dishStats.average_rating.toFixed(1)}
+                        </span>
+                        <span className="text-xs text-gray-600">
+                          ({dishStats.total_reviews})
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-gray-600">Sin reseñas</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      // Si ya hay una review, pre-llenar el rating
+                      if (myReview) {
+                        setReviewRating(myReview.rating);
+                      } else {
+                        setReviewRating(0);
+                      }
+                      setIsReviewModalOpen(true);
+                    }}
+                    className="underline text-black"
+                  >
+                    {myReview ? "Editar mi reseña" : "Comparte tu reseña"}
+                  </button>
+                </>
+              )}
             </div>
             <div className="flex flex-col justify-between items-start mb-4">
               <h2 className="text-3xl font-medium text-black capitalize">

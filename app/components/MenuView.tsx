@@ -1,6 +1,6 @@
 "use client";
 
-import MenuHeader from "./MenuHeader";
+import MenuHeader from "./headers/MenuHeader";
 import MenuCategory from "./MenuCategory";
 import { Search, ShoppingCart, Settings } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -9,7 +9,7 @@ import { useUserData } from "../context/UserDataContext";
 import { useTableNavigation } from "../hooks/useTableNavigation";
 import { useTable } from "../context/TableContext";
 import { useRestaurant } from "../context/RestaurantContext";
-import Loader from "./Loader";
+import Loader from "./UI/Loader";
 
 interface MenuViewProps {
   tableNumber?: string;

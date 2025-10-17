@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import MenuView from "../../components/MenuView";
 import { useTable } from "../../context/TableContext";
 import { useRestaurant } from "../../context/RestaurantContext";
-import Loader from "../../components/Loader";
+import Loader from "../../components/UI/Loader";
 
 export default function RestaurantMenuPage() {
   const params = useParams();

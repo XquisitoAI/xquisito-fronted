@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import Loader from "./components/Loader";
+import Loader from "./components/UI/Loader";
 
 // Restaurant ID por defecto para testing
 const DEFAULT_RESTAURANT_ID = 3;
@@ -39,7 +39,8 @@ export default function Home() {
 
     // Determinar restaurantId
     const restaurantParam = searchParams.get("restaurant");
-    const restaurantId = restaurantParam || storedRestaurant || DEFAULT_RESTAURANT_ID;
+    const restaurantId =
+      restaurantParam || storedRestaurant || DEFAULT_RESTAURANT_ID;
 
     if (isSignedIn && storedTable && isFromMenu) {
       // User signed in from MenuView settings, redirect to dashboard with table
@@ -73,13 +74,17 @@ export default function Home() {
     // Check for table parameter in current URL
     const tableParam = searchParams.get("table");
     if (tableParam) {
-      console.log(`✅ Redirecting to /${restaurantId}/menu?table=${tableParam}`);
+      console.log(
+        `✅ Redirecting to /${restaurantId}/menu?table=${tableParam}`
+      );
       router.replace(`/${restaurantId}/menu?table=${tableParam}`);
       return;
     }
 
     // Default redirect to restaurant 3, table 12 for demo
-    console.log(`✅ Default redirect to /${DEFAULT_RESTAURANT_ID}/menu?table=${DEFAULT_TABLE}`);
+    console.log(
+      `✅ Default redirect to /${DEFAULT_RESTAURANT_ID}/menu?table=${DEFAULT_TABLE}`
+    );
     router.replace(`/${DEFAULT_RESTAURANT_ID}/menu?table=${DEFAULT_TABLE}`);
   }, [router, searchParams, isSignedIn, isLoaded]);
 

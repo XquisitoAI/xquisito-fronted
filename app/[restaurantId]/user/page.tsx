@@ -6,7 +6,7 @@ import { useTable, CartItem } from "../../context/TableContext";
 import { useTableNavigation } from "../../hooks/useTableNavigation";
 import { useRestaurant } from "../../context/RestaurantContext";
 import { getRestaurantData } from "../../utils/restaurantData";
-import MenuHeaderBack from "../../components/MenuHeaderBack";
+import MenuHeaderBack from "../../components/headers/MenuHeaderBack";
 import { Loader2 } from "lucide-react";
 import OrderAnimation from "../../components/UI/OrderAnimation";
 

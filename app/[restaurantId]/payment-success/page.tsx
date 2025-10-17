@@ -13,35 +13,10 @@ import {
   Receipt,
   X,
   Calendar,
-  CreditCard,
   Utensils,
   CircleAlert,
 } from "lucide-react";
-import {
-  Mastercard,
-  Visa,
-  Amex,
-  Discover,
-} from "react-payment-logos/dist/logo";
-import { JSX } from "react";
-
-// Utility function to get card type icon
-function getCardTypeIcon(cardType: string): JSX.Element {
-  const type = cardType.toLowerCase();
-
-  switch (type) {
-    case "visa":
-      return <Visa style={{ width: "40px", height: "25px" }} />;
-    case "mastercard":
-      return <Mastercard style={{ width: "40px", height: "25px" }} />;
-    case "amex":
-      return <Amex style={{ width: "40px", height: "25px" }} />;
-    case "discover":
-      return <Discover style={{ width: "40px", height: "25px" }} />;
-    default:
-      return <CreditCard className="w-5 h-5 text-gray-700" />;
-  }
-}
+import { getCardTypeIcon } from "../../utils/cardIcons";
 
 export default function PaymentSuccessPage() {
   const params = useParams();
@@ -398,11 +373,7 @@ export default function PaymentSuccessPage() {
 
                   {paymentDetails?.cardLast4 && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      {paymentDetails?.cardBrand ? (
-                        getCardTypeIcon(paymentDetails.cardBrand)
-                      ) : (
-                        <CreditCard className="w-4 h-4 text-gray-700" />
-                      )}
+                      {getCardTypeIcon(paymentDetails.cardBrand || "unknown", "small")}
                       <span className="text-sm">
                         **** **** **** {paymentDetails.cardLast4}
                       </span>

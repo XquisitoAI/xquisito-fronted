@@ -1,8 +1,8 @@
 "use client";
 
-import { Restaurant } from "../interfaces/restaurante";
-import { useTable } from "../context/TableContext";
-import { useTableNavigation } from "../hooks/useTableNavigation";
+import { Restaurant } from "../../interfaces/restaurante";
+import { useTable } from "../../context/TableContext";
+import { useTableNavigation } from "../../hooks/useTableNavigation";
 import { usePathname } from "next/navigation";
 import { ShoppingCart, ReceiptText } from "lucide-react";
 import GlassSurface from "@/app/components/UI/GlassSurface";
