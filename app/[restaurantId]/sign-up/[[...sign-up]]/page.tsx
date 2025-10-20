@@ -8,7 +8,6 @@ import { useUserData } from "../../../context/UserDataContext";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { ScanFace, Mail, KeyRound, User } from "lucide-react";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
-import { esMX } from "@clerk/localizations";
 import { useRestaurant } from "@/app/context/RestaurantContext";
 
 export default function SignUpPage() {
@@ -98,8 +97,6 @@ export default function SignUpPage() {
           <SignUp.Root
             routing="virtual"
             path={`/${restaurantId}/sign-up`}
-            afterSignUpUrl=""
-            localization={esMX}
           >
             <SignUp.Step name="start">
               {/*
