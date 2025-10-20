@@ -3,7 +3,7 @@ import { Category } from "../interfaces/category";
 
 // Datos del menú
 export const menuData: Category[] = [
-  {
+  /*{
     id: 1,
     category: "Desayunos",
     icon: "🍳",
@@ -78,7 +78,7 @@ export const menuData: Category[] = [
         features: ["Coffee ☕", "Bebida 🥛"],
       },
     ],
-  },
+  },*/
 ];
 
 // Función para buscar un plato por ID
