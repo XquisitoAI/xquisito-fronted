@@ -58,6 +58,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       console.log(totalPrice);
       
       return {
+        ...state,
         items: newItems,
         totalItems,
         totalPrice
