@@ -26,33 +26,36 @@ export const useEcartPay = () => {
       
       // Handle different response formats from EcartPay
       if (result && typeof result === 'object') {
+        const resultObj = result as any;
+
         // If result has success property, use it
-        if ('success' in result) {
-          if (!result.success) {
-            throw new Error(result.error?.message || 'Payment failed');
+        if ('success' in resultObj) {
+          if (!resultObj.success) {
+            throw new Error(resultObj.error?.message || 'Payment failed');
           }
-          return result as EcartPayCheckoutResult;
+          return resultObj as EcartPayCheckoutResult;
         }
         // If result has payment or order info, consider it successful
-        else if ('payment' in result || 'order' in result || 'id' in result) {
+        else if ('payment' in resultObj || 'order' in resultObj || 'id' in resultObj) {
           return {
             success: true,
-            payment: result.payment || { 
-              id: result.id || 'unknown', 
+            payment: resultObj.payment || {
+              id: resultObj.id || 'unknown',
               status: 'completed',
               amount: options.order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-              currency: options.order.currency 
+              currency: options.order.currency
             },
-            order: result.order
+            order: resultObj.order
           } as EcartPayCheckoutResult;
         }
       }
       
       // If we get here, the result format is unexpected
       console.warn('⚠️ Unexpected EcartPay result format:', result);
-      
+
       // Try to handle as success if no explicit error
-      if (result && !result.error) {
+      const resultObj = result as any;
+      if (result && !resultObj.error) {
         return {
           success: true,
           payment: {
