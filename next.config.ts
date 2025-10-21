@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
+  basePath: "/flexbill",
+  assetPrefix: "/flexbill",
+  trailingSlash: true,
   typescript: {
     ignoreBuildErrors: true,
   },
