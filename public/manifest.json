@@ -2,21 +2,21 @@
   "name": "Xquisito",
   "short_name": "Xquisito",
   "description": "Tu menú digital con un toque de NFC",
-  "start_url": "/",
+  "start_url": "/flexbill/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
   "orientation": "portrait",
-  "scope": "/",
+  "scope": "/flexbill/",
   "icons": [
     {
-      "src": "/logo-short-green.webp",
+      "src": "/flexbill/logo-short-green.webp",
       "sizes": "192x192",
       "type": "image/webp",
       "purpose": "any maskable"
     },
     {
-      "src": "/logo-short-green.webp",
+      "src": "/flexbill/logo-short-green.webp",
       "sizes": "512x512",
       "type": "image/webp",
       "purpose": "any maskable"
