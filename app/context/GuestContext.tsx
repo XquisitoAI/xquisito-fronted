@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, Suspense } from 'react';
 import { apiService } from '../utils/api';
 import { useSearchParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
@@ -22,7 +22,7 @@ interface GuestProviderProps {
   children: ReactNode;
 }
 
-export function GuestProvider({ children }: GuestProviderProps) {
+function GuestProviderInternal({ children }: GuestProviderProps) {
   const [isGuest, setIsGuest] = useState<boolean>(false);
   const [guestId, setGuestId] = useState<string | null>(null);
   const [tableNumber, setTableNumber] = useState<string | null>(null);
@@ -199,6 +199,14 @@ export function GuestProvider({ children }: GuestProviderProps) {
     <GuestContext.Provider value={value}>
       {children}
     </GuestContext.Provider>
+  );
+}
+
+export function GuestProvider({ children }: GuestProviderProps) {
+  return (
+    <Suspense fallback={<div style={{ display: 'none' }} />}>
+      <GuestProviderInternal>{children}</GuestProviderInternal>
+    </Suspense>
   );
 }
 

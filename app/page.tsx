@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -9,7 +10,7 @@ import Loader from "./components/UI/Loader";
 const DEFAULT_RESTAURANT_ID = 3;
 const DEFAULT_TABLE = 12;
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isSignedIn, isLoaded } = useUser();
@@ -89,4 +90,12 @@ export default function Home() {
   }, [router, searchParams, isSignedIn, isLoaded]);
 
   return <Loader />;
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <HomeContent />
+    </Suspense>
+  );
 }

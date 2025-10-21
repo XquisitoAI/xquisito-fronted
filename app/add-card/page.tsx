@@ -3,6 +3,7 @@
 // NOTE: This page is maintained for users who want to manage payment methods separately
 // Main payment flows now use EcartPay SDK directly in payment/page.tsx and add-tip/page.tsx
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTable } from "../context/TableContext";
 import { useTableNavigation } from "../hooks/useTableNavigation";
@@ -17,7 +18,7 @@ import Loader from "../components/UI/Loader";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { Camera } from "lucide-react";
 
-export default function AddCardPage() {
+function AddCardContent() {
   const { state } = useTable();
   const { goBack, navigateWithTable } = useTableNavigation();
   const router = useRouter();
@@ -524,5 +525,13 @@ export default function AddCardPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function AddCardPage() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <AddCardContent />
+    </Suspense>
   );
 }

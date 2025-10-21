@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { CartProvider } from "./context/CartContext";
@@ -91,9 +91,6 @@ export const metadata: Metadata = {
   title: "Xquisito",
   description: "Tu menú digital con un toque de NFC",
   manifest: "/manifest.json",
-  themeColor: "#000000",
-  viewport:
-    "minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover",
   icons: {
     icon: [
       {
@@ -106,6 +103,14 @@ export const metadata: Metadata = {
       },
     ],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
