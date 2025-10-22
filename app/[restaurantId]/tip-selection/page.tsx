@@ -317,8 +317,10 @@ export default function TipSelectionPage() {
           <div
             className={`bg-white rounded-t-4xl relative z-10 flex flex-col px-8 pt-8 ${
               paymentType === "equal-shares" || paymentType === "full-bill"
-                ? "pb-[280px]"
-                : "pb-[450px]"
+                ? "pb-[330px]"
+                : paymentType === "choose-amount"
+                  ? "pb-[330px]"
+                  : "pb-[200px]"
             }`}
           >
             {/* Seleccionar monto a pagar para choose-amount */}
@@ -443,7 +445,7 @@ export default function TipSelectionPage() {
 
         {/* Tip Selection Section */}
         <div
-          className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 pt-4 space-y-4 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
+          className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 pt-4 space-y-4 z-10"
           style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
         >
           {/* Resumen del pago */}
@@ -563,17 +565,6 @@ export default function TipSelectionPage() {
               </div>
             )}
           </div>
-
-          {/* IVA */}
-          {/*
-          <div className="pt-2">
-            <div className="flex justify-between items-center">
-              <span className="text-black font-medium">IVA (16%)</span>
-              <span className="text-black font-medium">
-                ${ivaAmount.toFixed(2)} MXN
-              </span>
-            </div>
-          </div>*/}
 
           {/* Total final */}
           <div className="border-t border-gray-200 pt-6">
