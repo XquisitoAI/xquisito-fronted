@@ -121,8 +121,8 @@ export default function RootLayout({
   return (
     <ClerkProvider
       localization={esMX}
-      signUpFallbackRedirectUrl=""
-      signInFallbackRedirectUrl=""
+      signUpFallbackRedirectUrl="/"
+      signInFallbackRedirectUrl="/"
     >
       <html lang="es">
         <head></head>
