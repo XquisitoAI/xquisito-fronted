@@ -446,8 +446,13 @@ export default function OrderStatus() {
 
                 {/* Fixed bottom section */}
                 {unpaidDishes.length > 0 && tableRemainingAmount > 0 && (
-                  <div className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 z-10" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
-                    <div className="border-t border-[#8e8e8e]/50 mb-4"></div>
+                  <div
+                    className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
+                    style={{
+                      paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+                    }}
+                  >
+                    <div className="mb-4"></div>
                     {/* Table Total */}
                     <div className="space-y-3">
                       {/* Total de la Mesa */}
@@ -486,8 +491,8 @@ export default function OrderStatus() {
                       }
                       className={`mt-5 w-full py-3 rounded-full font-normal transition-colors text-white ${
                         !isProcessingPayment && tableRemainingAmount > 0
-                          ? "bg-black hover:bg-stone-950 cursor-pointer"
-                          : "bg-stone-800 cursor-not-allowed"
+                          ? "bg-gradient-to-r from-[#34808C] to-[#173E44] cursor-pointer"
+                          : "bg-gradient-to-r from-[#34808C] to-[#173E44] opacity-50 cursor-not-allowed"
                       }`}
                     >
                       {isProcessingPayment ? (

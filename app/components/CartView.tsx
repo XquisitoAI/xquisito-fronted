@@ -72,7 +72,7 @@ export default function CartView() {
                 Mesa {state.tableNumber}
               </h1>
               <h2 className="font-medium text-white text-3xl leading-7 mt-2 mb-6">
-                Todo listo, revisa tu pedido y confirma
+                Confirma tu pedido
               </h2>
             </div>
           )}
@@ -82,7 +82,7 @@ export default function CartView() {
           {/* Cart Items */}
           <div className="bg-white rounded-t-4xl flex-1 z-5 flex flex-col px-6 overflow-hidden">
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto flex flex-col pb-[320px]">
+            <div className="flex-1 overflow-y-auto flex flex-col pb-[120px]">
               <div className="pt-6">
                 <h2 className="bg-[#f9f9f9] border border-[#8e8e8e] rounded-full px-3 py-1 text-base font-medium text-black w-fit mx-auto">
                   Mi carrito
@@ -193,6 +193,19 @@ export default function CartView() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Comentarios Textarea - Dentro del scroll */}
+                  <div className="text-black mt-6">
+                    <span className="font-medium text-xl">
+                      ¿Algo que debamos saber?
+                    </span>
+                    <textarea
+                      name=""
+                      id=""
+                      className="h-24 text-base w-full bg-[#f9f9f9] border border-[#bfbfbf] px-3 py-2 rounded-lg resize-none focus:outline-none mt-2"
+                      placeholder="Alergias, instrucciones especiales, comentarios..."
+                    ></textarea>
+                  </div>
                 </div>
               )}
             </div>
@@ -200,32 +213,23 @@ export default function CartView() {
             {/* Fixed bottom section */}
             {state.currentUserItems.length > 0 && (
               <div
-                className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 border-t border-[#8e8e8e]/50 z-10"
+                className="fixed bottom-0 left-0 bg-white right-0 mx-4 px-6 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
                 style={{
                   paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
                 }}
               >
-                <div className="w-full flex justify-between text-black text-base font-medium mb-6 pt-6">
-                  <span>Total</span>
-                  <p>${state.currentUserTotalPrice.toFixed(2)} MXN</p>
-                </div>
-
-                <div className="text-black">
-                  <span className="font-medium text-xl">
-                    ¿Algo que debamos saber?
-                  </span>
-                  <textarea
-                    name=""
-                    id=""
-                    className="h-20 text-base w-full bg-[#f9f9f9] border border-[#bfbfbf] px-3 py-2 rounded-lg resize-none focus:outline-none mt-2"
-                    placeholder="Alergias, instrucciones especiales, comentarios..."
-                  ></textarea>
-                </div>
-
-                <div className="w-full">
+                <div className="w-full flex gap-3 mt-6 justify-between">
+                  <div className="flex flex-col justify-center">
+                    <span className="text-gray-600 text-sm">
+                      {state.currentUserTotalItems} artículos
+                    </span>
+                    <div className="flex items-center justify-center w-fit text-2xl font-medium text-black text-center">
+                      ${state.currentUserTotalPrice.toFixed(2)}
+                    </div>
+                  </div>
                   <button
                     onClick={handleOrder}
-                    className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full cursor-pointer transition-colors font-normal mt-4"
+                    className="bg-gradient-to-r from-[#34808C] to-[#173E44] py-3 text-white px-20 rounded-full cursor-pointer transition-colors font-normal h-fit flex items-center justify-center"
                   >
                     Ordenar
                   </button>

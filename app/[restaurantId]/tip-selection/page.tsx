@@ -317,8 +317,8 @@ export default function TipSelectionPage() {
           <div
             className={`bg-white rounded-t-4xl relative z-10 flex flex-col px-8 pt-8 ${
               paymentType === "equal-shares" || paymentType === "full-bill"
-                ? "pb-[300px]"
-                : "pb-[360px]"
+                ? "pb-[280px]"
+                : "pb-[450px]"
             }`}
           >
             {/* Seleccionar monto a pagar para choose-amount */}
@@ -443,15 +443,16 @@ export default function TipSelectionPage() {
 
         {/* Tip Selection Section */}
         <div
-          className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 pt-4 space-y-4 z-10"
+          className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 pt-4 space-y-4 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
           style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
         >
           {/* Resumen del pago */}
           <div className="space-y-2">
-            {/* Total de la Mesa - solo mostrar si NO es full-bill ni equal-shares */}
+            {/* Total de la Mesa - solo mostrar si NO es full-bill ni equal-shares ni select-items */}
             {paymentType !== "full-bill" &&
               paymentType !== "equal-shares" &&
-              paymentType !== "choose-amount" && (
+              paymentType !== "choose-amount" &&
+              paymentType !== "select-items" && (
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-medium text-black">
                     Total de la Mesa
@@ -484,34 +485,36 @@ export default function TipSelectionPage() {
               </div>
             )}
 
-            {/* Tu parte */}
-            <div className="flex justify-between items-center">
-              <span className="text-black font-medium">
-                {paymentType === "full-bill"
-                  ? "Total:"
-                  : paymentType === "select-items"
-                    ? "Tus artículos:"
+            {/* Tu parte - NO mostrar si es select-items */}
+            {paymentType !== "select-items" && (
+              <div className="flex justify-between items-center">
+                <span className="text-black font-medium">
+                  {paymentType === "full-bill"
+                    ? "Total:"
                     : paymentType === "equal-shares"
                       ? "Tu parte:"
                       : paymentType === "choose-amount"
                         ? "Tu monto:"
                         : "Tu parte:"}
-              </span>
-              <span className="text-black font-medium">
-                ${baseAmount.toFixed(2)} MXN
-              </span>
-            </div>
+                </span>
+                <span className="text-black font-medium">
+                  ${baseAmount.toFixed(2)} MXN
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Comisión */}
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex justify-between items-center">
-              <span className="text-black font-medium">Comisión</span>
-              <span className="text-black font-medium">
-                ${commissionAmount.toFixed(2)} MXN
-              </span>
+          {paymentType !== "select-items" && (
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex justify-between items-center">
+                <span className="text-black font-medium">Comisión</span>
+                <span className="text-black font-medium">
+                  ${commissionAmount.toFixed(2)} MXN
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Selección de propina */}
           <div className="">
@@ -573,72 +576,68 @@ export default function TipSelectionPage() {
           </div>*/}
 
           {/* Total final */}
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-black font-medium text-lg">
-                  Total a pagar
-                </span>
-                <CircleAlert
-                  className="size-4 cursor-pointer text-gray-500"
-                  strokeWidth={2.3}
-                  onClick={() => setShowTotalModal(true)}
-                />
+          <div className="border-t border-gray-200 pt-6">
+            <div className="w-full flex gap-3 justify-between">
+              <div className="flex flex-col justify-center -translate-y-2">
+                <span className="text-gray-600 text-sm">Total a pagar</span>
+                <div className="flex items-center justify-center w-fit text-2xl font-medium text-black text-center gap-2">
+                  ${paymentAmount.toFixed(2)}
+                  <CircleAlert
+                    className="size-4 cursor-pointer text-gray-500"
+                    strokeWidth={2.3}
+                    onClick={() => setShowTotalModal(true)}
+                  />
+                </div>
               </div>
-              <span className="font-medium text-black text-lg">
-                ${paymentAmount.toFixed(2)} MXN
-              </span>
+
+              {/* Pagar Button */}
+              {(() => {
+                const isChooseAmountInvalid =
+                  paymentType === "choose-amount" &&
+                  (!customPaymentAmount ||
+                    parseFloat(customPaymentAmount) <= 0 ||
+                    parseFloat(customPaymentAmount) > maxAllowedAmount);
+
+                const isSelectItemsInvalid =
+                  paymentType === "select-items" && selectedItems.length === 0;
+
+                const isDisabled =
+                  baseAmount <= 0 ||
+                  isChooseAmountInvalid ||
+                  isSelectItemsInvalid;
+
+                return (
+                  <button
+                    onClick={handleContinueToCardSelection}
+                    disabled={isDisabled || isNavigating}
+                    className={`rounded-full cursor-pointer transition-colors h-10 flex items-center justify-center  ${
+                      isDisabled || isNavigating
+                        ? "bg-gradient-to-r from-[#34808C] to-[#173E44] opacity-50 cursor-not-allowed text-white px-10"
+                        : "bg-gradient-to-r from-[#34808C] to-[#173E44] text-white px-20"
+                    }`}
+                  >
+                    {isNavigating ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span>Cargando...</span>
+                      </div>
+                    ) : paymentType === "choose-amount" &&
+                      (!customPaymentAmount ||
+                        parseFloat(customPaymentAmount) <= 0) ? (
+                      "Introduce un monto"
+                    ) : paymentType === "choose-amount" &&
+                      parseFloat(customPaymentAmount) > maxAllowedAmount ? (
+                      "Monto excede el máximo permitido"
+                    ) : paymentType === "select-items" &&
+                      selectedItems.length === 0 ? (
+                      "Selecciona al menos un artículo"
+                    ) : (
+                      "Pagar"
+                    )}
+                  </button>
+                );
+              })()}
             </div>
-          </div>
-
-          {/* Pagar Button */}
-          <div className="mt-4">
-            {(() => {
-              const isChooseAmountInvalid =
-                paymentType === "choose-amount" &&
-                (!customPaymentAmount ||
-                  parseFloat(customPaymentAmount) <= 0 ||
-                  parseFloat(customPaymentAmount) > maxAllowedAmount);
-
-              const isSelectItemsInvalid =
-                paymentType === "select-items" && selectedItems.length === 0;
-
-              const isDisabled =
-                baseAmount <= 0 ||
-                isChooseAmountInvalid ||
-                isSelectItemsInvalid;
-
-              return (
-                <button
-                  onClick={handleContinueToCardSelection}
-                  disabled={isDisabled || isNavigating}
-                  className={`w-full text-white py-3 rounded-full cursor-pointer transition-colors ${
-                    isDisabled || isNavigating
-                      ? "bg-stone-800 cursor-not-allowed"
-                      : "bg-black hover:bg-stone-950"
-                  }`}
-                >
-                  {isNavigating ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Cargando...</span>
-                    </div>
-                  ) : paymentType === "choose-amount" &&
-                    (!customPaymentAmount ||
-                      parseFloat(customPaymentAmount) <= 0) ? (
-                    "Introduce un monto"
-                  ) : paymentType === "choose-amount" &&
-                    parseFloat(customPaymentAmount) > maxAllowedAmount ? (
-                    "Monto excede el máximo permitido"
-                  ) : paymentType === "select-items" &&
-                    selectedItems.length === 0 ? (
-                    "Selecciona al menos un artículo"
-                  ) : (
-                    "Pagar"
-                  )}
-                </button>
-              );
-            })()}
           </div>
         </div>
       </div>
