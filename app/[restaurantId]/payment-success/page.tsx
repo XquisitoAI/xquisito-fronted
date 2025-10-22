@@ -267,7 +267,7 @@ export default function PaymentSuccessPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="space-y-3">
+            <div className="space-y-3" style={{ paddingBottom: 'max(0rem, env(safe-area-inset-bottom))' }}>
               <button
                 onClick={handleGoHome}
                 className="w-full text-white py-3 rounded-full cursor-pointer transition-colors bg-black hover:bg-stone-950"

@@ -131,7 +131,7 @@ export default function OrderStatus() {
           </div>
         </div>
 
-        <div className="flex-1 h-full flex flex-col overflow-hidden">
+        <div className="flex-1 h-full flex flex-col overflow-hidden relative">
           <div className="bg-white rounded-t-4xl flex-1 z-5 flex flex-col overflow-hidden">
             {/* Table Closed Message */}
             {state.tableSummary?.data?.data?.status === "paid" ? (
@@ -171,7 +171,7 @@ export default function OrderStatus() {
             ) : (
               <>
                 {/* Scrollable content */}
-                <div className="flex-1 overflow-y-auto px-6 pb-4">
+                <div className="flex-1 overflow-y-auto px-6 pb-[180px]">
                   {/* Ordered Items */}
                   <div className="w-full mx-auto pb-6">
                     <div className="flex justify-center items-start relative mt-6">
@@ -446,10 +446,10 @@ export default function OrderStatus() {
 
                 {/* Fixed bottom section */}
                 {unpaidDishes.length > 0 && tableRemainingAmount > 0 && (
-                  <div className="bg-white px-6 pb-4">
-                    <div className="border-t border-[#8e8e8e]/50"></div>
+                  <div className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 z-10" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+                    <div className="border-t border-[#8e8e8e]/50 mb-4"></div>
                     {/* Table Total */}
-                    <div className="mt-4 space-y-3">
+                    <div className="space-y-3">
                       {/* Total de la Mesa */}
                       <div className="flex justify-between items-center">
                         <span className="font-medium text-black">Subtotal</span>

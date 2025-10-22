@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useTable } from "../../context/TableContext";
 import { useTableNavigation } from "../../hooks/useTableNavigation";
@@ -26,6 +26,7 @@ export default function PaymentOptionsPage() {
   const params = useParams();
   const { setRestaurantId } = useRestaurant();
   const restaurantId = params?.restaurantId as string;
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (restaurantId && !isNaN(parseInt(restaurantId))) {
@@ -34,8 +35,17 @@ export default function PaymentOptionsPage() {
   }, [restaurantId, setRestaurantId]);
 
   const { user } = useUser();
-  const { state, loadTableData, loadActiveUsers } = useTable();
+  const { state, dispatch, loadTableData, loadActiveUsers } = useTable();
   const { navigateWithTable } = useTableNavigation();
+
+  // Establecer tableNumber desde URL si no está en el estado
+  useEffect(() => {
+    const tableFromUrl = searchParams?.get('table');
+    if (tableFromUrl && !state.tableNumber) {
+      console.log("🔧 Payment options: Setting table number from URL:", tableFromUrl);
+      dispatch({ type: "SET_TABLE_NUMBER", payload: tableFromUrl });
+    }
+  }, [searchParams, state.tableNumber, dispatch]);
   const router = useRouter();
   const restaurantData = getRestaurantData();
   const [isLoading, setIsLoading] = useState(true);
@@ -90,15 +100,27 @@ export default function PaymentOptionsPage() {
   useEffect(() => {
     const loadPaymentData = async () => {
       if (state.tableNumber) {
-        setIsLoading(true);
-        await loadTableData();
-        await loadSplitStatus();
-        setIsLoading(false);
+        // Si no hay datos cargados o están desactualizados, cargar
+        if (!state.dishOrders || state.dishOrders.length === 0 || !state.tableSummary) {
+          console.log("🔄 Payment options: Loading table data (missing data)");
+          setIsLoading(true);
+          await loadTableData();
+          await loadSplitStatus();
+          setIsLoading(false);
+        } else {
+          // Ya hay datos, solo cargar split status
+          console.log("✅ Payment options: Data already loaded, loading split status only");
+          await loadSplitStatus();
+          setIsLoading(false);
+        }
+      } else if (!state.tableNumber && !isLoading) {
+        // Si no hay número de mesa, mantenerse en loading
+        console.log("⚠️ Payment options: Waiting for table number...");
       }
     };
 
     loadPaymentData();
-  }, [state.tableNumber]);
+  }, [state.tableNumber, state.dishOrders, state.tableSummary]);
 
   // Recargar split status cuando cambien los split payments en el contexto
   useEffect(() => {
@@ -353,7 +375,7 @@ export default function PaymentOptionsPage() {
         tableNumber={state.tableNumber}
       />
 
-      <div className="px-4 w-full fixed bottom-0 left-0 right-0">
+      <div className="px-4 w-full flex-1 flex flex-col justify-end overflow-y-auto">
         <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
           <div className="py-6 px-8 flex flex-col justify-center">
             <h1 className="font-medium text-white text-3xl leading-7 mt-2 mb-6">
@@ -362,7 +384,7 @@ export default function PaymentOptionsPage() {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex flex-col">
           <div className="bg-white rounded-t-4xl z-5 flex flex-col px-8">
             {/* 4 OPCIONES PRINCIPALES DE PAGO */}
             <div className="flex flex-col my-8">
@@ -483,7 +505,7 @@ export default function PaymentOptionsPage() {
           </div>
 
           {/* Total - Fixed to bottom */}
-          <div className="bg-white px-8 pb-6">
+          <div className="bg-white px-8" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
             <div className="border-t border-[#8e8e8e] pt-6 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium text-black">

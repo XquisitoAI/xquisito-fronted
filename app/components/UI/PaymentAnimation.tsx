@@ -22,6 +22,7 @@ export default function PaymentAnimation({
 
     // Start fade out immediately after checkmark animation completes (~1.3s)
     const fadeOutTimer = setTimeout(() => {
+      console.log("🎬 PaymentAnimation: Starting fade out");
       setFadeOut(true);
     }, 1300);
 
@@ -29,6 +30,8 @@ export default function PaymentAnimation({
     const completeTimer = setTimeout(() => {
       if (onAnimationComplete) {
         onAnimationComplete();
+      } else {
+        console.warn("⚠️ PaymentAnimation: No callback provided");
       }
     }, 1800);
 
@@ -51,15 +54,16 @@ export default function PaymentAnimation({
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a8b9b] to-[#153f43]"></div>
 
         {/* Animated Checkmark SVG */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative">
+        <div className="absolute inset-0 flex items-center justify-center m-0 p-0">
+          <div className="relative m-0 p-0">
             {/* SVG Checkmark */}
-            <div className="animated_checkmark">
+            <div className="animated_checkmark m-0 p-0">
               <svg
                 version="1.1"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 130.2 130.2"
-                style={{ width: "160px", height: "160px" }}
+                className="m-0 p-0"
+                style={{ width: "160px", height: "160px", display: "block" }}
               >
                 <circle
                   className="path circle"

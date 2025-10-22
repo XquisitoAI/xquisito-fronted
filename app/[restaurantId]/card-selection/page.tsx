@@ -7,7 +7,7 @@ import { useGuest, useIsGuest } from "../../context/GuestContext";
 import { usePayment } from "../../context/PaymentContext";
 import { useRestaurant } from "../../context/RestaurantContext";
 import { getRestaurantData } from "../../utils/restaurantData";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useEcartPay } from "../../hooks/useEcartPay";
 import MenuHeaderBack from "../../components/headers/MenuHeaderBack";
@@ -29,9 +29,21 @@ export default function CardSelectionPage() {
     }
   }, [restaurantId, setRestaurantId]);
 
-  const { state, loadTableData } = useTable();
+  const { state, dispatch, loadTableData } = useTable();
   const { navigateWithTable } = useTableNavigation();
   const searchParams = useSearchParams();
+
+  // Establecer tableNumber desde URL si no está en el estado
+  useEffect(() => {
+    const tableFromUrl = searchParams?.get("table");
+    if (tableFromUrl && !state.tableNumber) {
+      console.log(
+        "🔧 Card selection: Setting table number from URL:",
+        tableFromUrl
+      );
+      dispatch({ type: "SET_TABLE_NUMBER", payload: tableFromUrl });
+    }
+  }, [searchParams, state.tableNumber, dispatch]);
   const restaurantData = getRestaurantData();
   const isGuest = useIsGuest();
   const { guestId, tableNumber, setAsAuthenticated } = useGuest();
@@ -121,6 +133,28 @@ export default function CardSelectionPage() {
       );
     }
   }, [userName, state.currentUserName, user, paymentType, selectedItemsParam]);
+
+  // Cargar datos de la mesa si no existen en el contexto
+  useEffect(() => {
+    const loadData = async () => {
+      if (state.tableNumber) {
+        // Si no hay datos cargados o están desactualizados, cargar
+        if (
+          !state.dishOrders ||
+          state.dishOrders.length === 0 ||
+          !state.tableSummary
+        ) {
+          console.log("🔄 Card selection: Loading table data (missing data)");
+          await loadTableData();
+        } else {
+          console.log("✅ Card selection: Data already loaded");
+        }
+      } else if (!state.tableNumber) {
+        console.log("⚠️ Card selection: Waiting for table number...");
+      }
+    };
+    loadData();
+  }, [state.tableNumber, state.dishOrders, state.tableSummary]);
 
   // Calcular totales basados en el nuevo sistema de platillos
   const dishOrders = Array.isArray(state.dishOrders) ? state.dishOrders : [];
@@ -302,13 +336,13 @@ export default function CardSelectionPage() {
     }
   };
 
-  const handleAnimationComplete = () => {
+  const handleAnimationComplete = useCallback(() => {
     // Navigate after animation completes
     const paymentId = "completed";
     navigateWithTable(
       `/payment-success?paymentId=${paymentId}&amount=${baseAmount}&type=${paymentType}&processed=true`
     );
-  };
+  }, [navigateWithTable, baseAmount, paymentType]);
 
   const handlePayment = async (): Promise<void> => {
     // Validar selección de tarjeta si hay métodos de pago disponibles
@@ -558,7 +592,7 @@ export default function CardSelectionPage() {
         onAnimationComplete={handleAnimationComplete}
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43]">
+      <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
         <div className={isAnimatingOut ? "animate-fade-out" : ""}>
           <MenuHeaderBack
             restaurant={restaurantData}
@@ -567,9 +601,9 @@ export default function CardSelectionPage() {
         </div>
 
         <div
-          className={`px-4 w-full fixed bottom-0 left-0 right-0 ${isAnimatingOut ? "animate-slide-down" : ""}`}
+          className={`px-4 w-full flex-1 flex flex-col justify-end overflow-y-auto ${isAnimatingOut ? "animate-slide-down" : ""}`}
         >
-          <div className="flex-1 flex flex-col relative">
+          <div className="flex flex-col relative">
             <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
               <div className="py-6 px-8 flex flex-col justify-center">
                 <h1 className="font-medium text-white text-3xl leading-7 mt-2 mb-6">
@@ -783,6 +817,9 @@ export default function CardSelectionPage() {
                     ? "bg-stone-800 cursor-not-allowed"
                     : "bg-black hover:bg-stone-950"
                 }`}
+                style={{
+                  marginBottom: "max(0rem, env(safe-area-inset-bottom))",
+                }}
               >
                 {paymentLoading || isProcessing ? (
                   <div className="flex items-center justify-center gap-2">

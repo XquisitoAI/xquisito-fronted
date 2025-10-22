@@ -22,9 +22,18 @@ export default function TipSelectionPage() {
     }
   }, [restaurantId, setRestaurantId]);
 
-  const { state, loadTableData } = useTable();
+  const { state, dispatch, loadTableData } = useTable();
   const { navigateWithTable } = useTableNavigation();
   const searchParams = useSearchParams();
+
+  // Establecer tableNumber desde URL si no está en el estado
+  useEffect(() => {
+    const tableFromUrl = searchParams?.get('table');
+    if (tableFromUrl && !state.tableNumber) {
+      console.log("🔧 Tip selection: Setting table number from URL:", tableFromUrl);
+      dispatch({ type: "SET_TABLE_NUMBER", payload: tableFromUrl });
+    }
+  }, [searchParams, state.tableNumber, dispatch]);
   const restaurantData = getRestaurantData();
 
   const paymentType = searchParams.get("type") || "full-bill";
@@ -63,14 +72,26 @@ export default function TipSelectionPage() {
   useEffect(() => {
     const loadData = async () => {
       if (state.tableNumber) {
-        setIsLoading(true);
-        await loadTableData();
-        await loadSplitStatus();
-        setIsLoading(false);
+        // Si no hay datos cargados o están desactualizados, cargar
+        if (!state.dishOrders || state.dishOrders.length === 0 || !state.tableSummary) {
+          console.log("🔄 Tip selection: Loading table data (missing data)");
+          setIsLoading(true);
+          await loadTableData();
+          await loadSplitStatus();
+          setIsLoading(false);
+        } else {
+          // Ya hay datos, solo cargar split status
+          console.log("✅ Tip selection: Data already loaded, loading split status only");
+          await loadSplitStatus();
+          setIsLoading(false);
+        }
+      } else if (!state.tableNumber && !isLoading) {
+        // Si no hay número de mesa, mantenerse en loading
+        console.log("⚠️ Tip selection: Waiting for table number...");
       }
     };
     loadData();
-  }, [state.tableNumber]);
+  }, [state.tableNumber, state.dishOrders, state.tableSummary]);
 
   // Inicializar customPaymentAmount para choose-amount
   useEffect(() => {
@@ -271,8 +292,8 @@ export default function TipSelectionPage() {
         tableNumber={state.tableNumber}
       />
 
-      <div className="px-4 w-full fixed bottom-0 left-0 right-0">
-        <div className="flex-1 flex flex-col relative">
+      <div className="px-4 w-full flex-1 flex flex-col justify-end overflow-y-auto">
+        <div className="flex flex-col relative">
           <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
             <div className="py-6 px-8 flex flex-col justify-center">
               <h1 className="text-[#e0e0e0] text-xl font-medium">
@@ -284,7 +305,7 @@ export default function TipSelectionPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-t-4xl relative z-10 flex flex-col px-8 py-8">
+          <div className="bg-white rounded-t-4xl relative z-10 flex flex-col px-8 pt-8">
             {/* Seleccionar monto a pagar para choose-amount */}
             {paymentType === "choose-amount" && (
               <div className="mb-6">
@@ -329,7 +350,7 @@ export default function TipSelectionPage() {
             {/* Seleccionar artículos específicos */}
             {paymentType === "select-items" && (
               <div className="mb-6">
-                <div className="space-y-3 max-h-60 overflow-y-auto">
+                <div className="space-y-3">
                   {unpaidDishes.map((dish) => {
                     const isSelected = selectedItems.includes(
                       dish.dish_order_id
@@ -346,7 +367,7 @@ export default function TipSelectionPage() {
                           <div className="flex items-center gap-3">
                             <div className="flex-shrink-0">
                               <div
-                                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                                   isSelected
                                     ? "border-teal-500 bg-teal-500"
                                     : "border-gray-300"
@@ -354,7 +375,7 @@ export default function TipSelectionPage() {
                               >
                                 {isSelected && (
                                   <svg
-                                    className="w-4 h-4 text-white"
+                                    className="w-3 h-3 text-white"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -369,7 +390,7 @@ export default function TipSelectionPage() {
                                 )}
                               </div>
                             </div>
-                            <div className="size-16 bg-gray-300 rounded-sm flex items-center justify-center hover:scale-105 transition-transform duration-200">
+                            <div className="size-12 bg-gray-300 rounded-sm flex items-center justify-center hover:scale-105 transition-transform duration-200">
                               <img
                                 src={dish.images[0] || "/logo-short-green.webp"}
                                 alt="Logo Xquisito"
@@ -554,7 +575,7 @@ export default function TipSelectionPage() {
         </div>
 
         {/* Pagar Button */}
-        <div className="bg-white px-8 pb-6">
+        <div className="bg-white px-8" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
           {(() => {
             const isChooseAmountInvalid =
               paymentType === "choose-amount" &&
@@ -584,7 +605,8 @@ export default function TipSelectionPage() {
                     <span>Cargando...</span>
                   </div>
                 ) : paymentType === "choose-amount" &&
-                  (!customPaymentAmount || parseFloat(customPaymentAmount) <= 0) ? (
+                  (!customPaymentAmount ||
+                    parseFloat(customPaymentAmount) <= 0) ? (
                   "Introduce un monto"
                 ) : paymentType === "choose-amount" &&
                   parseFloat(customPaymentAmount) > maxAllowedAmount ? (
