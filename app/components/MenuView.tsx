@@ -148,6 +148,7 @@ export default function MenuView({ tableNumber }: MenuViewProps) {
                 autoPlay
                 loop
                 muted
+                playsInline
                 className="w-full h-full object-cover rounded-full"
               />
               {/*<img src="/logo-short-green.webp" alt="AI" className="size-6" />*/}
@@ -226,7 +227,7 @@ export default function MenuView({ tableNumber }: MenuViewProps) {
         <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center">
           <div
             onClick={() => navigateWithTable("/cart")}
-            className="bg-black text-white rounded-full px-6 py-3 shadow-lg flex items-center gap-3 cursor-pointer hover:bg-stone-950 transition-all hover:scale-105 animate-bounce-in"
+            className="bg-gradient-to-r from-[#34808C] to-[#173E44] text-white rounded-full px-6 py-3 shadow-lg flex items-center gap-3 cursor-pointer transition-all hover:scale-105 animate-bounce-in"
           >
             <ShoppingCart className="size-5" />
             <span>Ver el carrito • {totalItems}</span>

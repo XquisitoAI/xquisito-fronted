@@ -588,7 +588,7 @@ export default function DishDetailPage() {
       <MenuHeaderDish />
 
       <main className="mt-72 relative z-10">
-        <div className="bg-white rounded-t-4xl flex flex-col px-6">
+        <div className="bg-white rounded-t-4xl flex flex-col px-6 pb-[100px]">
           <div className="mt-8">
             <div className="flex justify-between items-center text-black mb-6">
               {isLoadingReviews ? (
@@ -790,10 +790,15 @@ export default function DishDetailPage() {
               ></textarea>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div
+              className="fixed bottom-0 left-0 right-0 mx-4 px-6 p-6 z-10"
+              style={{
+                paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+              }}
+            >
               <button
                 onClick={handleAddToCartAndReturn}
-                className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full cursor-pointer transition-colors mb-6 flex items-center justify-center gap-2"
+                className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full cursor-pointer transition-colors flex items-center justify-center gap-2"
               >
                 <span>
                   Agregar al carrito • ${calculateTotalPrice().toFixed(2)} MXN

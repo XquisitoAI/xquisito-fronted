@@ -28,9 +28,12 @@ export default function TipSelectionPage() {
 
   // Establecer tableNumber desde URL si no está en el estado
   useEffect(() => {
-    const tableFromUrl = searchParams?.get('table');
+    const tableFromUrl = searchParams?.get("table");
     if (tableFromUrl && !state.tableNumber) {
-      console.log("🔧 Tip selection: Setting table number from URL:", tableFromUrl);
+      console.log(
+        "🔧 Tip selection: Setting table number from URL:",
+        tableFromUrl
+      );
       dispatch({ type: "SET_TABLE_NUMBER", payload: tableFromUrl });
     }
   }, [searchParams, state.tableNumber, dispatch]);
@@ -73,7 +76,11 @@ export default function TipSelectionPage() {
     const loadData = async () => {
       if (state.tableNumber) {
         // Si no hay datos cargados o están desactualizados, cargar
-        if (!state.dishOrders || state.dishOrders.length === 0 || !state.tableSummary) {
+        if (
+          !state.dishOrders ||
+          state.dishOrders.length === 0 ||
+          !state.tableSummary
+        ) {
           console.log("🔄 Tip selection: Loading table data (missing data)");
           setIsLoading(true);
           await loadTableData();
@@ -81,7 +88,9 @@ export default function TipSelectionPage() {
           setIsLoading(false);
         } else {
           // Ya hay datos, solo cargar split status
-          console.log("✅ Tip selection: Data already loaded, loading split status only");
+          console.log(
+            "✅ Tip selection: Data already loaded, loading split status only"
+          );
           await loadSplitStatus();
           setIsLoading(false);
         }
@@ -305,10 +314,16 @@ export default function TipSelectionPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-t-4xl relative z-10 flex flex-col px-8 pt-8">
+          <div
+            className={`bg-white rounded-t-4xl relative z-10 flex flex-col px-8 pt-8 ${
+              paymentType === "equal-shares" || paymentType === "full-bill"
+                ? "pb-[300px]"
+                : "pb-[360px]"
+            }`}
+          >
             {/* Seleccionar monto a pagar para choose-amount */}
             {paymentType === "choose-amount" && (
-              <div className="mb-6">
+              <div>
                 <div className="flex flex-col w-full items-center">
                   <label className="block text-xl font-medium text-black mb-4">
                     Monto a pagar
@@ -427,7 +442,10 @@ export default function TipSelectionPage() {
         </div>
 
         {/* Tip Selection Section */}
-        <div className="bg-white px-8 pb-6 space-y-4">
+        <div
+          className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 pt-4 space-y-4 z-10"
+          style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+        >
           {/* Resumen del pago */}
           <div className="space-y-2">
             {/* Total de la Mesa - solo mostrar si NO es full-bill ni equal-shares */}
@@ -572,54 +590,56 @@ export default function TipSelectionPage() {
               </span>
             </div>
           </div>
-        </div>
 
-        {/* Pagar Button */}
-        <div className="bg-white px-8" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
-          {(() => {
-            const isChooseAmountInvalid =
-              paymentType === "choose-amount" &&
-              (!customPaymentAmount ||
-                parseFloat(customPaymentAmount) <= 0 ||
-                parseFloat(customPaymentAmount) > maxAllowedAmount);
+          {/* Pagar Button */}
+          <div className="mt-4">
+            {(() => {
+              const isChooseAmountInvalid =
+                paymentType === "choose-amount" &&
+                (!customPaymentAmount ||
+                  parseFloat(customPaymentAmount) <= 0 ||
+                  parseFloat(customPaymentAmount) > maxAllowedAmount);
 
-            const isSelectItemsInvalid =
-              paymentType === "select-items" && selectedItems.length === 0;
+              const isSelectItemsInvalid =
+                paymentType === "select-items" && selectedItems.length === 0;
 
-            const isDisabled =
-              baseAmount <= 0 || isChooseAmountInvalid || isSelectItemsInvalid;
+              const isDisabled =
+                baseAmount <= 0 ||
+                isChooseAmountInvalid ||
+                isSelectItemsInvalid;
 
-            return (
-              <button
-                onClick={handleContinueToCardSelection}
-                disabled={isDisabled || isNavigating}
-                className={`w-full text-white py-3 rounded-full cursor-pointer transition-colors ${
-                  isDisabled || isNavigating
-                    ? "bg-stone-800 cursor-not-allowed"
-                    : "bg-black hover:bg-stone-950"
-                }`}
-              >
-                {isNavigating ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Cargando...</span>
-                  </div>
-                ) : paymentType === "choose-amount" &&
-                  (!customPaymentAmount ||
-                    parseFloat(customPaymentAmount) <= 0) ? (
-                  "Introduce un monto"
-                ) : paymentType === "choose-amount" &&
-                  parseFloat(customPaymentAmount) > maxAllowedAmount ? (
-                  "Monto excede el máximo permitido"
-                ) : paymentType === "select-items" &&
-                  selectedItems.length === 0 ? (
-                  "Selecciona al menos un artículo"
-                ) : (
-                  "Pagar"
-                )}
-              </button>
-            );
-          })()}
+              return (
+                <button
+                  onClick={handleContinueToCardSelection}
+                  disabled={isDisabled || isNavigating}
+                  className={`w-full text-white py-3 rounded-full cursor-pointer transition-colors ${
+                    isDisabled || isNavigating
+                      ? "bg-stone-800 cursor-not-allowed"
+                      : "bg-black hover:bg-stone-950"
+                  }`}
+                >
+                  {isNavigating ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span>Cargando...</span>
+                    </div>
+                  ) : paymentType === "choose-amount" &&
+                    (!customPaymentAmount ||
+                      parseFloat(customPaymentAmount) <= 0) ? (
+                    "Introduce un monto"
+                  ) : paymentType === "choose-amount" &&
+                    parseFloat(customPaymentAmount) > maxAllowedAmount ? (
+                    "Monto excede el máximo permitido"
+                  ) : paymentType === "select-items" &&
+                    selectedItems.length === 0 ? (
+                    "Selecciona al menos un artículo"
+                  ) : (
+                    "Pagar"
+                  )}
+                </button>
+              );
+            })()}
+          </div>
         </div>
       </div>
 

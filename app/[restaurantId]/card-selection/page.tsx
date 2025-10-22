@@ -612,7 +612,7 @@ export default function CardSelectionPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-t-4xl relative z-10 flex flex-col px-6 flex-1 py-8">
+            <div className="bg-white rounded-t-4xl relative z-10 flex flex-col px-6 flex-1 py-8 pb-[60px]">
               {/* Payment Summary */}
               <div className="space-y-2 mb-6">
                 {/*
@@ -793,7 +793,15 @@ export default function CardSelectionPage() {
                   Agregar método de pago
                 </button>
               </div>
+            </div>
 
+            {/* Fixed bottom section with button */}
+            <div
+              className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 pt-4 z-10"
+              style={{
+                paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+              }}
+            >
               {paymentError && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                   <p className="text-red-800 text-sm text-center">
@@ -817,9 +825,6 @@ export default function CardSelectionPage() {
                     ? "bg-stone-800 cursor-not-allowed"
                     : "bg-black hover:bg-stone-950"
                 }`}
-                style={{
-                  marginBottom: "max(0rem, env(safe-area-inset-bottom))",
-                }}
               >
                 {paymentLoading || isProcessing ? (
                   <div className="flex items-center justify-center gap-2">

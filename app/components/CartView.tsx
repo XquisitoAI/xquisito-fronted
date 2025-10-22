@@ -82,9 +82,9 @@ export default function CartView() {
           {/* Cart Items */}
           <div className="bg-white rounded-t-4xl flex-1 z-5 flex flex-col px-6 overflow-hidden">
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto flex flex-col pb-4">
+            <div className="flex-1 overflow-y-auto flex flex-col pb-[320px]">
               <div className="pt-6">
-                <h2 className="bg-[#f9f9f9] border border-[#8e8e8e] rounded-full px-3 py-1 text-base font-medium text-black justify-self-center">
+                <h2 className="bg-[#f9f9f9] border border-[#8e8e8e] rounded-full px-3 py-1 text-base font-medium text-black w-fit mx-auto">
                   Mi carrito
                 </h2>
               </div>
@@ -199,7 +199,12 @@ export default function CartView() {
 
             {/* Fixed bottom section */}
             {state.currentUserItems.length > 0 && (
-              <div className="bg-white border-t border-[#8e8e8e]/50">
+              <div
+                className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 border-t border-[#8e8e8e]/50 z-10"
+                style={{
+                  paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+                }}
+              >
                 <div className="w-full flex justify-between text-black text-base font-medium mb-6 pt-6">
                   <span>Total</span>
                   <p>${state.currentUserTotalPrice.toFixed(2)} MXN</p>
@@ -212,15 +217,15 @@ export default function CartView() {
                   <textarea
                     name=""
                     id=""
-                    className="h-24 text-base w-full bg-[#f9f9f9] border border-[#bfbfbf] px-3 py-2 rounded-lg resize-none focus:outline-none mt-2"
+                    className="h-20 text-base w-full bg-[#f9f9f9] border border-[#bfbfbf] px-3 py-2 rounded-lg resize-none focus:outline-none mt-2"
                     placeholder="Alergias, instrucciones especiales, comentarios..."
                   ></textarea>
                 </div>
 
-                <div className="py-4 w-full">
+                <div className="w-full">
                   <button
                     onClick={handleOrder}
-                    className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full cursor-pointer transition-colors font-normal"
+                    className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full cursor-pointer transition-colors font-normal mt-4"
                   >
                     Ordenar
                   </button>
