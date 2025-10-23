@@ -384,164 +384,168 @@ export default function PaymentOptionsPage() {
         tableNumber={state.tableNumber}
       />
 
-      <div className="px-4 w-full flex-1 flex flex-col justify-end overflow-y-auto">
-        <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
-          <div className="py-6 px-8 flex flex-col justify-center">
-            <h1 className="font-medium text-white text-3xl leading-7 mt-2 mb-6">
-              Elige cómo quieres pagar la cuenta
-            </h1>
-          </div>
-        </div>
-
-        <div className="flex flex-col">
-          <div className="bg-white rounded-t-4xl z-5 flex flex-col px-8">
-            {/* 4 OPCIONES PRINCIPALES DE PAGO */}
-            <div className="flex flex-col mt-4">
-              {/* Opción 1: Pagar cuenta completa */}
-              {unpaidAmount > 0 && (
-                <button
-                  onClick={handlePayFullBill}
-                  className="w-full bg-white cursor-pointer border-b border-[#8e8e8e]"
-                >
-                  <div className="flex items-center gap-4 py-4">
-                    <div className="size-16 rounded-sm border border-black flex items-center justify-center">
-                      <ReceiptText
-                        className="text-black size-9"
-                        strokeWidth={1}
-                      />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <h3 className="text-black">Pagar cuenta completa</h3>
-                    </div>
-                    <div className="text-black">
-                      <ChevronRight className="size-5" />
-                    </div>
-                  </div>
-                </button>
-              )}
-
-              {/* Opción 2: Seleccionar platillos específicos (TODOS los items disponibles) */}
-              {unpaidDishes.length > 0 && (
-                <button
-                  onClick={handleSelectItems}
-                  className="w-full bg-white cursor-pointer border-b border-[#8e8e8e]"
-                >
-                  <div className="flex items-center gap-4 py-4">
-                    <div className="size-16 rounded-sm border border-black flex items-center justify-center">
-                      <img
-                        src="/icons/select-items-logo.svg"
-                        alt=""
-                        className="rounded-sm"
-                      />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <h3 className="text-black">Seleccionar artículos</h3>
-                    </div>
-                    <div className="text-black">
-                      <ChevronRight className="size-5" />
-                    </div>
-                  </div>
-                </button>
-              )}
-
-              {/* Opción 3: Dividir cuenta */}
-              {unpaidAmount > 0 && (
-                <button
-                  onClick={handleEqualShares}
-                  className="w-full bg-white cursor-pointer border-b border-[#8e8e8e]"
-                >
-                  <div className="flex items-center gap-4 py-4">
-                    <div className="size-16 rounded-sm border border-black flex items-center justify-center">
-                      <img
-                        src="/icons/split-bill-logo.png"
-                        alt=""
-                        className="size-9"
-                      />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <h3 className="text-black">Dividir cuenta</h3>
-                      {uniqueUsers.length > 1 && (
-                        <p className="text-sm text-gray-600">
-                          ${(unpaidAmount / uniqueUsers.length).toFixed(2)} por
-                          persona (${uniqueUsers.length} personas pendientes)
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-black">
-                      <ChevronRight className="size-5" />
-                    </div>
-                  </div>
-                </button>
-              )}
-
-              {/* Opción 4: Elegir monto personalizado */}
-              {unpaidAmount > 0 && (
-                <button
-                  onClick={handleChooseAmount}
-                  className="w-full bg-white cursor-pointer"
-                >
-                  <div className="flex items-center gap-4 py-4">
-                    <div className="size-16 rounded-sm border border-black flex items-center justify-center">
-                      <DollarSign
-                        className="text-black size-9"
-                        strokeWidth={1}
-                      />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <h3 className="text-black">Elegir monto</h3>
-                    </div>
-                    <div className="text-black">
-                      <ChevronRight className="size-5" />
-                    </div>
-                  </div>
-                </button>
-              )}
+      <div className="w-full flex-1 flex flex-col justify-end">
+        <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center">
+          <div className="flex flex-col relative mx-4 w-full">
+            <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
+              <div className="py-6 px-8 flex flex-col justify-center">
+                <h1 className="font-medium text-white text-3xl leading-7 mt-2 mb-6">
+                  Elige cómo quieres pagar la cuenta
+                </h1>
+              </div>
             </div>
 
-            {/* Mensaje si no hay platillos pendientes */}
-            {unpaidAmount <= 0 && (
-              <div className="my-8 text-center">
-                <div className="p-6 bg-green-50 rounded-lg">
-                  <h3 className="text-lg font-medium text-green-800 mb-2">
-                    ¡Cuenta pagada completamente!
-                  </h3>
-                  <p className="text-green-600">
-                    Todos los platillos de la mesa han sido pagados.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+            <div className="flex flex-col">
+              <div className="bg-white rounded-t-4xl z-5 flex flex-col px-8">
+                {/* 4 OPCIONES PRINCIPALES DE PAGO */}
+                <div className="flex flex-col mt-4">
+                  {/* Opción 1: Pagar cuenta completa */}
+                  {unpaidAmount > 0 && (
+                    <button
+                      onClick={handlePayFullBill}
+                      className="w-full bg-white cursor-pointer border-b border-[#8e8e8e]"
+                    >
+                      <div className="flex items-center gap-4 py-4">
+                        <div className="size-16 rounded-sm border border-black flex items-center justify-center">
+                          <ReceiptText
+                            className="text-black size-9"
+                            strokeWidth={1}
+                          />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <h3 className="text-black">Pagar cuenta completa</h3>
+                        </div>
+                        <div className="text-black">
+                          <ChevronRight className="size-5" />
+                        </div>
+                      </div>
+                    </button>
+                  )}
 
-          {/* Total - Fixed to bottom */}
-          <div
-            className="bg-white px-8"
-            style={{
-              paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
-            }}
-          >
-            <div className="border-t border-[#8e8e8e] pt-6 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-medium text-black">
-                  Total mesa {state.tableNumber}
-                </span>
-                <span className="text-lg font-medium text-black">
-                  ${tableTotalPrice.toFixed(2)}
-                </span>
-              </div>
-              {paidAmount > 0 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-green-600 font-medium">Pagado:</span>
-                  <span className="text-green-600 font-medium">
-                    ${paidAmount.toFixed(2)}
-                  </span>
+                  {/* Opción 2: Seleccionar platillos específicos (TODOS los items disponibles) */}
+                  {unpaidDishes.length > 0 && (
+                    <button
+                      onClick={handleSelectItems}
+                      className="w-full bg-white cursor-pointer border-b border-[#8e8e8e]"
+                    >
+                      <div className="flex items-center gap-4 py-4">
+                        <div className="size-16 rounded-sm border border-black flex items-center justify-center">
+                          <img
+                            src="/icons/select-items-logo.svg"
+                            alt=""
+                            className="rounded-sm"
+                          />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <h3 className="text-black">Seleccionar artículos</h3>
+                        </div>
+                        <div className="text-black">
+                          <ChevronRight className="size-5" />
+                        </div>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Opción 3: Dividir cuenta */}
+                  {unpaidAmount > 0 && (
+                    <button
+                      onClick={handleEqualShares}
+                      className="w-full bg-white cursor-pointer border-b border-[#8e8e8e]"
+                    >
+                      <div className="flex items-center gap-4 py-4">
+                        <div className="size-16 rounded-sm border border-black flex items-center justify-center">
+                          <img
+                            src="/icons/split-bill-logo.png"
+                            alt=""
+                            className="size-9"
+                          />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <h3 className="text-black">Dividir cuenta</h3>
+                          {uniqueUsers.length > 1 && (
+                            <p className="text-sm text-gray-600">
+                              ${(unpaidAmount / uniqueUsers.length).toFixed(2)}{" "}
+                              por persona (${uniqueUsers.length} personas
+                              pendientes)
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-black">
+                          <ChevronRight className="size-5" />
+                        </div>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Opción 4: Elegir monto personalizado */}
+                  {unpaidAmount > 0 && (
+                    <button
+                      onClick={handleChooseAmount}
+                      className="w-full bg-white cursor-pointer"
+                    >
+                      <div className="flex items-center gap-4 py-4">
+                        <div className="size-16 rounded-sm border border-black flex items-center justify-center">
+                          <DollarSign
+                            className="text-black size-9"
+                            strokeWidth={1}
+                          />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <h3 className="text-black">Elegir monto</h3>
+                        </div>
+                        <div className="text-black">
+                          <ChevronRight className="size-5" />
+                        </div>
+                      </div>
+                    </button>
+                  )}
                 </div>
-              )}
-              <div className="flex justify-between items-center">
-                <span className="text-[#eab3f4] font-medium">Restante:</span>
-                <span className="text-[#eab3f4] font-medium">
-                  ${unpaidAmount.toFixed(2)}
-                </span>
+
+                {/* Mensaje si no hay platillos pendientes */}
+                {unpaidAmount <= 0 && (
+                  <div className="my-8 text-center">
+                    <div className="p-6 bg-green-50 rounded-lg">
+                      <h3 className="text-lg font-medium text-green-800 mb-2">
+                        ¡Cuenta pagada completamente!
+                      </h3>
+                      <p className="text-green-600">
+                        Todos los platillos de la mesa han sido pagados.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Total - Fixed to bottom */}
+              <div className="bg-white px-8">
+                <div className="border-t border-[#8e8e8e] py-4 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-medium text-black">
+                      Total mesa {state.tableNumber}
+                    </span>
+                    <span className="text-lg font-medium text-black">
+                      ${tableTotalPrice.toFixed(2)}
+                    </span>
+                  </div>
+                  {paidAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-green-600 font-medium">
+                        Pagado:
+                      </span>
+                      <span className="text-green-600 font-medium">
+                        ${paidAmount.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#eab3f4] font-medium">
+                      Restante:
+                    </span>
+                    <span className="text-[#eab3f4] font-medium">
+                      ${unpaidAmount.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

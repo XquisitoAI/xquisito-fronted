@@ -76,6 +76,7 @@ export default function ChatView({ onBack }: ChatViewProps) {
                     autoPlay
                     loop
                     muted
+                    playsInline
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -106,28 +107,30 @@ export default function ChatView({ onBack }: ChatViewProps) {
       </div>
 
       {/* Input */}
-      <div className="flex items-center gap-2 bg-gray-100 rounded-full px-6 py-4 border border-gray-200 m-4">
-        <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
-          <Plus className="size-6" />
-        </button>
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && handleSend()}
-          placeholder="Pregunta lo que necesites..."
-          className="flex-1 bg-transparent text-black placeholder-gray-500 focus:outline-none"
-        />
-        <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
-          <Mic className="size-6" />
-        </button>
-        <button
-          onClick={handleSend}
-          className="text-[#ebb2f4] rounded-full transition-colors disabled:text-gray-400"
-          disabled={!message.trim()}
-        >
-          <SendHorizontal className="size-6 -rotate-90" />
-        </button>
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center py-4">
+        <div className="flex items-center gap-2 bg-gray-100 rounded-full px-6 py-4 border border-gray-200 mx-4 w-full">
+          <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
+            <Plus className="size-6" />
+          </button>
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Pregunta lo que necesites..."
+            className="flex-1 bg-transparent text-black placeholder-gray-500 focus:outline-none"
+          />
+          <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
+            <Mic className="size-6" />
+          </button>
+          <button
+            onClick={handleSend}
+            className="text-[#ebb2f4] rounded-full transition-colors disabled:text-gray-400"
+            disabled={!message.trim()}
+          >
+            <SendHorizontal className="size-6 -rotate-90" />
+          </button>
+        </div>
       </div>
     </div>
   );

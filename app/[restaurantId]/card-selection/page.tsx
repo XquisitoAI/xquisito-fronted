@@ -601,28 +601,29 @@ export default function CardSelectionPage() {
         </div>
 
         <div
-          className={`px-4 w-full flex-1 flex flex-col justify-end overflow-y-auto ${isAnimatingOut ? "animate-slide-down" : ""}`}
+          className={`w-full flex-1 flex flex-col justify-end ${isAnimatingOut ? "animate-slide-down" : ""}`}
         >
-          <div className="flex flex-col relative">
-            <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
-              <div className="py-6 px-8 flex flex-col justify-center">
-                <h1 className="font-medium text-white text-3xl leading-7 mt-2 mb-6">
-                  Selecciona tu método de pago
-                </h1>
+          <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center">
+            <div className="flex flex-col relative mx-4 w-full">
+              <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
+                <div className="py-6 px-8 flex flex-col justify-center">
+                  <h1 className="font-medium text-white text-3xl leading-7 mt-2 mb-6">
+                    Selecciona tu método de pago
+                  </h1>
+                </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-t-4xl relative z-10 flex flex-col px-6 flex-1 py-8 pb-[60px]">
-              {/* Payment Summary */}
-              <div className="space-y-2 mb-6">
-                {/*
+              <div className="bg-white rounded-t-4xl relative z-10 flex flex-col px-6 flex-1 py-8">
+                {/* Payment Summary */}
+                <div className="space-y-2 mb-6">
+                  {/*
               <div className="mb-4">
                 <span className="text-black text-xl font-semibold">
                   Mesa {state.tableNumber}
                 </span>
               </div>*/}
 
-                {/*
+                  {/*
               <div className="flex justify-between items-center">
                 <span className="text-black font-medium">Total mesa</span>
                 <span className="text-black font-medium">
@@ -630,68 +631,70 @@ export default function CardSelectionPage() {
                 </span>
               </div>*/}
 
-                {unpaidAmount < tableTotalPrice && (
+                  {unpaidAmount < tableTotalPrice && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-black font-medium">Pendiente</span>
+                      <span className="text-black font-medium">
+                        ${unpaidAmount.toFixed(2)} MXN
+                      </span>
+                    </div>
+                  )}
+
                   <div className="flex justify-between items-center">
-                    <span className="text-black font-medium">Pendiente</span>
+                    <span className="text-black font-medium">Tu parte</span>
                     <span className="text-black font-medium">
-                      ${unpaidAmount.toFixed(2)} MXN
+                      ${baseAmount.toFixed(2)} MXN
                     </span>
                   </div>
-                )}
 
-                <div className="flex justify-between items-center">
-                  <span className="text-black font-medium">Tu parte</span>
-                  <span className="text-black font-medium">
-                    ${baseAmount.toFixed(2)} MXN
-                  </span>
+                  {tipAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-black font-medium">Propina</span>
+                      <span className="text-black font-medium">
+                        ${tipAmount.toFixed(2)} MXN
+                      </span>
+                    </div>
+                  )}
+
+                  {commissionAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-black font-medium">Comisión</span>
+                      <span className="text-black font-medium">
+                        ${commissionAmount.toFixed(2)} MXN
+                      </span>
+                    </div>
+                  )}
+
+                  {ivaAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-black font-medium">IVA</span>
+                      <span className="text-black font-medium">
+                        ${ivaAmount.toFixed(2)} MXN
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center border-t pt-2">
+                    <span className="font-medium text-black">
+                      Total a pagar
+                    </span>
+                    <span className="font-medium text-black">
+                      ${totalAmountWithTip.toFixed(2)} MXN
+                    </span>
+                  </div>
                 </div>
 
-                {tipAmount > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-black font-medium">Propina</span>
-                    <span className="text-black font-medium">
-                      ${tipAmount.toFixed(2)} MXN
-                    </span>
-                  </div>
-                )}
-
-                {commissionAmount > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-black font-medium">Comisión</span>
-                    <span className="text-black font-medium">
-                      ${commissionAmount.toFixed(2)} MXN
-                    </span>
-                  </div>
-                )}
-
-                {ivaAmount > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-black font-medium">IVA</span>
-                    <span className="text-black font-medium">
-                      ${ivaAmount.toFixed(2)} MXN
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center border-t pt-2">
-                  <span className="font-medium text-black">Total a pagar</span>
-                  <span className="font-medium text-black">
-                    ${totalAmountWithTip.toFixed(2)} MXN
-                  </span>
-                </div>
-              </div>
-
-              {/* Payment Method Selection - Show for both registered users and guests with saved cards */}
-              {((user && hasPaymentMethods) ||
-                (isGuest && hasPaymentMethods)) && (
-                <div>
-                  {/*
+                {/* Payment Method Selection - Show for both registered users and guests with saved cards */}
+                {((user && hasPaymentMethods) ||
+                  (isGuest && hasPaymentMethods)) && (
+                  <div>
+                    {/*
                 <h3 className="text-sm font-medium text-black mb-4">
                   Selecciona tu método de pago
                 </h3>*/}
 
-                  {/* Payment Method Type Toggle */}
-                  {/*
+                    {/* Payment Method Type Toggle */}
+                    {/*
                 <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
                   <button
                     onClick={() => setPaymentMethodType("saved")}
@@ -716,127 +719,123 @@ export default function CardSelectionPage() {
                 </div>
                 */}
 
-                  {/* Saved Cards List */}
-                  {paymentMethodType === "saved" && (
-                    <div className="space-y-2.5 mb-2.5">
-                      {paymentMethods.map((method) => (
-                        <div
-                          key={method.id}
-                          className={`flex items-center py-1.5 px-5 pl-10 border rounded-full transition-colors ${
-                            selectedPaymentMethodId === method.id
-                              ? "border-teal-500 bg-teal-50"
-                              : "border-black/50  bg-[#f9f9f9]"
-                          }`}
-                        >
+                    {/* Saved Cards List */}
+                    {paymentMethodType === "saved" && (
+                      <div className="space-y-2.5 mb-2.5">
+                        {paymentMethods.map((method) => (
                           <div
-                            onClick={() =>
-                              setSelectedPaymentMethodId(method.id)
-                            }
-                            className="flex items-center justify-center gap-3 mx-auto cursor-pointer"
+                            key={method.id}
+                            className={`flex items-center py-1.5 px-5 pl-10 border rounded-full transition-colors ${
+                              selectedPaymentMethodId === method.id
+                                ? "border-teal-500 bg-teal-50"
+                                : "border-black/50  bg-[#f9f9f9]"
+                            }`}
                           >
-                            <div>{getCardTypeIcon(method.cardType)}</div>
-                            <div>
-                              <p className="text-black">
-                                **** **** **** {method.lastFourDigits}
-                              </p>
-                            </div>
-                            {/*
+                            <div
+                              onClick={() =>
+                                setSelectedPaymentMethodId(method.id)
+                              }
+                              className="flex items-center justify-center gap-3 mx-auto cursor-pointer"
+                            >
+                              <div>{getCardTypeIcon(method.cardType)}</div>
+                              <div>
+                                <p className="text-black">
+                                  **** **** **** {method.lastFourDigits}
+                                </p>
+                              </div>
+                              {/*
                           {method.isDefault && (
                             <span className="text-xs bg-teal-100 text-teal-800 px-1 py-1 rounded-full">
                               ⭐
                             </span>
                           )}*/}
-                          </div>
+                            </div>
 
-                          <div
-                            onClick={() =>
-                              setSelectedPaymentMethodId(method.id)
-                            }
-                            className={`w-4 h-4 rounded-full border-2 cursor-pointer ${
-                              selectedPaymentMethodId === method.id
-                                ? "border-teal-500 bg-teal-500"
-                                : "border-gray-300"
-                            }`}
-                          >
-                            {selectedPaymentMethodId === method.id && (
-                              <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                            )}
-                          </div>
+                            <div
+                              onClick={() =>
+                                setSelectedPaymentMethodId(method.id)
+                              }
+                              className={`w-4 h-4 rounded-full border-2 cursor-pointer ${
+                                selectedPaymentMethodId === method.id
+                                  ? "border-teal-500 bg-teal-500"
+                                  : "border-gray-300"
+                              }`}
+                            >
+                              {selectedPaymentMethodId === method.id && (
+                                <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                              )}
+                            </div>
 
-                          {/* Delete Button */}
-                          <button
-                            onClick={() => handleDeleteCard(method.id)}
-                            disabled={deletingCardId === method.id}
-                            className="pl-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50 cursor-pointer"
-                            title="Eliminar tarjeta"
-                          >
-                            {deletingCardId === method.id ? (
-                              <Loader2 className="size-5 animate-spin" />
-                            ) : (
-                              <Trash2 className="size-5" />
-                            )}
-                          </button>
-                        </div>
-                      ))}
+                            {/* Delete Button */}
+                            <button
+                              onClick={() => handleDeleteCard(method.id)}
+                              disabled={deletingCardId === method.id}
+                              className="pl-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50 cursor-pointer"
+                              title="Eliminar tarjeta"
+                            >
+                              {deletingCardId === method.id ? (
+                                <Loader2 className="size-5 animate-spin" />
+                              ) : (
+                                <Trash2 className="size-5" />
+                              )}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Payment Method Section */}
+                <div>
+                  <button
+                    onClick={handleAddCard}
+                    className="border border-black/50 flex justify-center items-center gap-1 w-full text-black py-3 rounded-full cursor-pointer transition-colors bg-[#f9f9f9] hover:bg-gray-100"
+                  >
+                    <Plus className="size-5" />
+                    Agregar método de pago
+                  </button>
+                </div>
+
+                {/* Bottom section with button - now inside the fixed container */}
+                <div className="pt-4">
+                  {paymentError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                      <p className="text-red-800 text-sm text-center">
+                        {paymentError}
+                      </p>
                     </div>
                   )}
-                </div>
-              )}
 
-              {/* Payment Method Section */}
-              <div className="mb-8">
-                <button
-                  onClick={handleAddCard}
-                  className="border border-black/50 flex justify-center items-center gap-1 w-full text-black py-3 rounded-full cursor-pointer transition-colors bg-[#f9f9f9] hover:bg-gray-100"
-                >
-                  <Plus className="size-5" />
-                  Agregar método de pago
-                </button>
+                  {/* Pay Button */}
+                  <button
+                    onClick={handlePayment}
+                    disabled={
+                      paymentLoading ||
+                      isProcessing ||
+                      (hasPaymentMethods && !selectedPaymentMethodId)
+                    }
+                    className={`w-full text-white py-3 rounded-full cursor-pointer transition-colors ${
+                      paymentLoading ||
+                      isProcessing ||
+                      (hasPaymentMethods && !selectedPaymentMethodId)
+                        ? "bg-gradient-to-r from-[#34808C] to-[#173E44] opacity-50 cursor-not-allowed"
+                        : "bg-gradient-to-r from-[#34808C] to-[#173E44]"
+                    }`}
+                  >
+                    {paymentLoading || isProcessing ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span>Procesando pago...</span>
+                      </div>
+                    ) : hasPaymentMethods && !selectedPaymentMethodId ? (
+                      "Selecciona una tarjeta"
+                    ) : (
+                      "Pagar"
+                    )}
+                  </button>
+                </div>
               </div>
-            </div>
-
-            {/* Fixed bottom section with button */}
-            <div
-              className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-6 pt-4 z-10"
-              style={{
-                paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
-              }}
-            >
-              {paymentError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                  <p className="text-red-800 text-sm text-center">
-                    {paymentError}
-                  </p>
-                </div>
-              )}
-
-              {/* Pay Button */}
-              <button
-                onClick={handlePayment}
-                disabled={
-                  paymentLoading ||
-                  isProcessing ||
-                  (hasPaymentMethods && !selectedPaymentMethodId)
-                }
-                className={`w-full text-white py-3 rounded-full cursor-pointer transition-colors ${
-                  paymentLoading ||
-                  isProcessing ||
-                  (hasPaymentMethods && !selectedPaymentMethodId)
-                    ? "bg-gradient-to-r from-[#34808C] to-[#173E44] opacity-50 cursor-not-allowed"
-                    : "bg-gradient-to-r from-[#34808C] to-[#173E44]"
-                }`}
-              >
-                {paymentLoading || isProcessing ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Procesando pago...</span>
-                  </div>
-                ) : hasPaymentMethods && !selectedPaymentMethodId ? (
-                  "Selecciona una tarjeta"
-                ) : (
-                  "Pagar"
-                )}
-              </button>
             </div>
           </div>
         </div>
