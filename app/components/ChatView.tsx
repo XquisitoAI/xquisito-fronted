@@ -44,6 +44,7 @@ export default function ChatView({ onBack }: ChatViewProps) {
                 autoPlay
                 loop
                 muted
+                playsInline
                 className="w-full h-full object-cover rounded-full"
               />
             </div>
