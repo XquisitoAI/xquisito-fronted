@@ -310,9 +310,9 @@ export default function TipSelectionPage() {
           className={`flex flex-col relative ${
             paymentType === "select-items"
               ? ""
-              : "fixed bottom-0 left-0 right-0 mx-4 z-8"
+              : "fixed bottom-0 left-0 right-0 mx-4"
           }`}
-          style={paymentType !== "select-items" ? { paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" } : {}}
+          style={paymentType !== "select-items" ? { zIndex: 50 } : {}}
         >
           <div className="left-4 right-4 bg-gradient-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
             <div className="py-6 px-8 flex flex-col justify-center">
@@ -326,7 +326,7 @@ export default function TipSelectionPage() {
           </div>
 
           <div
-            className={`bg-white rounded-t-4xl relative z-8 flex flex-col px-8 pt-8 ${
+            className={`bg-white rounded-t-4xl relative z-10 flex flex-col px-8 pt-8 ${
               paymentType === "select-items" ? "pb-[200px]" : ""
             }`}
           >
