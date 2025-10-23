@@ -273,7 +273,7 @@ export default function MenuHeaderBack({
       {/* Modal participantes */}
       {isParticipantsModalOpen && (
         <div
-          className="fixed inset-0 flex items-end justify-center"
+          className="fixed inset-0 flex items-end justify-center Z-999"
           style={{ zIndex: 99999 }}
         >
           {/* Fondo */}

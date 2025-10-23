@@ -9,13 +9,7 @@ import { useRestaurant } from "../../context/RestaurantContext";
 import { getRestaurantData } from "../../utils/restaurantData";
 import { apiService } from "../../utils/api";
 import { useUser } from "@clerk/nextjs";
-import {
-  Receipt,
-  X,
-  Calendar,
-  Utensils,
-  CircleAlert,
-} from "lucide-react";
+import { Receipt, X, Calendar, Utensils, CircleAlert } from "lucide-react";
 import { getCardTypeIcon } from "../../utils/cardIcons";
 
 export default function PaymentSuccessPage() {
@@ -267,10 +261,15 @@ export default function PaymentSuccessPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="space-y-3" style={{ paddingBottom: 'max(0rem, env(safe-area-inset-bottom))' }}>
+            <div
+              className="space-y-3"
+              style={{
+                paddingBottom: "max(0rem, env(safe-area-inset-bottom))",
+              }}
+            >
               <button
                 onClick={handleGoHome}
-                className="w-full text-white py-3 rounded-full cursor-pointer transition-colors bg-black hover:bg-stone-950"
+                className="w-full text-white py-3 rounded-full cursor-pointer transition-colors bg-gradient-to-r from-[#34808C] to-[#173E44]"
               >
                 Ir al menú
               </button>
@@ -373,7 +372,10 @@ export default function PaymentSuccessPage() {
 
                   {paymentDetails?.cardLast4 && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      {getCardTypeIcon(paymentDetails.cardBrand || "unknown", "small")}
+                      {getCardTypeIcon(
+                        paymentDetails.cardBrand || "unknown",
+                        "small"
+                      )}
                       <span className="text-sm">
                         **** **** **** {paymentDetails.cardLast4}
                       </span>

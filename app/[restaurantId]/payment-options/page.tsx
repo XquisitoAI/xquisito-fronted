@@ -40,9 +40,12 @@ export default function PaymentOptionsPage() {
 
   // Establecer tableNumber desde URL si no está en el estado
   useEffect(() => {
-    const tableFromUrl = searchParams?.get('table');
+    const tableFromUrl = searchParams?.get("table");
     if (tableFromUrl && !state.tableNumber) {
-      console.log("🔧 Payment options: Setting table number from URL:", tableFromUrl);
+      console.log(
+        "🔧 Payment options: Setting table number from URL:",
+        tableFromUrl
+      );
       dispatch({ type: "SET_TABLE_NUMBER", payload: tableFromUrl });
     }
   }, [searchParams, state.tableNumber, dispatch]);
@@ -101,7 +104,11 @@ export default function PaymentOptionsPage() {
     const loadPaymentData = async () => {
       if (state.tableNumber) {
         // Si no hay datos cargados o están desactualizados, cargar
-        if (!state.dishOrders || state.dishOrders.length === 0 || !state.tableSummary) {
+        if (
+          !state.dishOrders ||
+          state.dishOrders.length === 0 ||
+          !state.tableSummary
+        ) {
           console.log("🔄 Payment options: Loading table data (missing data)");
           setIsLoading(true);
           await loadTableData();
@@ -109,7 +116,9 @@ export default function PaymentOptionsPage() {
           setIsLoading(false);
         } else {
           // Ya hay datos, solo cargar split status
-          console.log("✅ Payment options: Data already loaded, loading split status only");
+          console.log(
+            "✅ Payment options: Data already loaded, loading split status only"
+          );
           await loadSplitStatus();
           setIsLoading(false);
         }
@@ -387,7 +396,7 @@ export default function PaymentOptionsPage() {
         <div className="flex flex-col">
           <div className="bg-white rounded-t-4xl z-5 flex flex-col px-8">
             {/* 4 OPCIONES PRINCIPALES DE PAGO */}
-            <div className="flex flex-col my-8">
+            <div className="flex flex-col mt-4">
               {/* Opción 1: Pagar cuenta completa */}
               {unpaidAmount > 0 && (
                 <button
@@ -505,7 +514,12 @@ export default function PaymentOptionsPage() {
           </div>
 
           {/* Total - Fixed to bottom */}
-          <div className="bg-white px-8" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+          <div
+            className="bg-white px-8"
+            style={{
+              paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+            }}
+          >
             <div className="border-t border-[#8e8e8e] pt-6 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium text-black">

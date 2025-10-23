@@ -116,12 +116,12 @@ export default function MenuView({ tableNumber }: MenuViewProps) {
           "https://w0.peakpx.com/wallpaper/531/501/HD-wallpaper-coffee-espresso-latte-art-cup-food.jpg"
         }
         alt=""
-        className="absolute top-0 left-0 w-full h-96 object-cover z-0"
+        className="absolute top-0 left-0 w-full h-72 object-cover z-0"
       />
 
       <MenuHeader restaurant={restaurant} tableNumber={tableNumber} />
 
-      <main className="mt-72 relative z-10">
+      <main className="mt-48 relative z-10">
         <div className="bg-white rounded-t-4xl flex flex-col items-center px-6">
           <div className="mt-6 flex items-start justify-between w-full">
             {/* Settings Icon */}

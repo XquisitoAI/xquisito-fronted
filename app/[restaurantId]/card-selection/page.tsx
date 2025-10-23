@@ -822,8 +822,8 @@ export default function CardSelectionPage() {
                   paymentLoading ||
                   isProcessing ||
                   (hasPaymentMethods && !selectedPaymentMethodId)
-                    ? "bg-stone-800 cursor-not-allowed"
-                    : "bg-black hover:bg-stone-950"
+                    ? "bg-gradient-to-r from-[#34808C] to-[#173E44] opacity-50 cursor-not-allowed"
+                    : "bg-gradient-to-r from-[#34808C] to-[#173E44]"
                 }`}
               >
                 {paymentLoading || isProcessing ? (

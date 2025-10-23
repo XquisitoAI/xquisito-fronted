@@ -798,7 +798,7 @@ export default function DishDetailPage() {
             >
               <button
                 onClick={handleAddToCartAndReturn}
-                className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full cursor-pointer transition-colors flex items-center justify-center gap-2"
+                className="bg-gradient-to-r from-[#34808C] to-[#173E44] w-full text-white py-3 rounded-full cursor-pointer transition-colors flex items-center justify-center gap-2"
               >
                 <span>
                   Agregar al carrito • ${calculateTotalPrice().toFixed(2)} MXN
