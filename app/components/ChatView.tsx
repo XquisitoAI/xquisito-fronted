@@ -54,7 +54,7 @@ export default function ChatView({ onBack }: ChatViewProps) {
           </div>
         </div>
       ) : (
-        <div className="p-4 flex items-center gap-3">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-white p-4 flex items-center gap-3">
           <button
             onClick={onBack}
             className="text-gray-400 hover:text-gray-700 rounded-full py-2 transition-colors cursor-pointer"
