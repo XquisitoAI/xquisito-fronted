@@ -139,8 +139,8 @@ export default function UserPage() {
                   disabled={!userName.trim() || isSubmitting}
                   className={`w-full py-3 rounded-full transition-colors text-white cursor-pointer ${
                     userName.trim() && !isSubmitting
-                      ? "bg-black hover:bg-stone-950"
-                      : "bg-stone-800 cursor-not-allowed"
+                      ? "bg-gradient-to-r from-[#34808C] to-[#173E44]"
+                      : "bg-gradient-to-r from-[#34808C] to-[#173E44] opacity-50 cursor-not-allowed"
                   }`}
                 >
                   {isSubmitting ? (

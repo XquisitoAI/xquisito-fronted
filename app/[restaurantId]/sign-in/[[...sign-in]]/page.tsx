@@ -267,7 +267,7 @@ function SignInContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col justify-center items-center px-4">
-      <div className="relative z-10 w-full max-w-md text-center flex flex-col items-center">
+      <div className="relative z-10 w-full max-w-md text-center flex flex-col items-center mb-12">
         <div className="mb-6">
           <img
             src="/logo-short-green.webp"
@@ -284,7 +284,7 @@ function SignInContent() {
                 </h1>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <Clerk.Field name="identifier" className="space-y-2">
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
@@ -315,7 +315,7 @@ function SignInContent() {
               </div>
 
               {/* Remember Me Checkbox */}
-              <div className="flex items-center mt-4">
+              <div className="flex items-center mt-2">
                 <input
                   type="checkbox"
                   id="rememberMe"
@@ -337,7 +337,7 @@ function SignInContent() {
                 </div>
               )}
 
-              <div className="flex items-center justify-center gap-3 mt-6">
+              <div className="flex items-center justify-center gap-3 mt-5">
                 <SignIn.Action
                   submit
                   className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full cursor-pointer transition-colors"
@@ -368,12 +368,12 @@ function SignInContent() {
               <button
                 type="button"
                 onClick={() => setForgotPasswordStep("email")}
-                className="text-white text-sm underline cursor-pointer mt-8 mb-2 block mx-auto"
+                className="text-white text-sm underline cursor-pointer mt-6 mb-2 block mx-auto"
               >
                 Olvidaste tu contraseña
               </button>
 
-              <div className="mb-8">
+              <div className="mb-6">
                 <div
                   className="text-white text-sm underline cursor-pointer text-center"
                   onClick={() => {
@@ -385,7 +385,7 @@ function SignInContent() {
               </div>
 
               {/* Social Login */}
-              <div className="flex items-center justify-center gap-12 mb-6">
+              <div className="flex items-center justify-center gap-12">
                 <Clerk.Connection
                   name="google"
                   className="p-3 border border-white rounded-full hover:bg-white/10 transition-colors font-medium cursor-pointer"
@@ -443,7 +443,7 @@ function SignInContent() {
                 </Clerk.Connection>
               </div>
 
-              <div className="relative my-6">
+              <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center pr-5">
                   <div className="w-1/2 border-t border-white" />
                 </div>
@@ -456,7 +456,7 @@ function SignInContent() {
               </div>
 
               <div
-                className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full font-normal cursor-pointer transition-colors mt-6"
+                className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full font-normal cursor-pointer transition-colors"
                 onClick={() => {
                   navigateWithTable("/sign-up");
                 }}

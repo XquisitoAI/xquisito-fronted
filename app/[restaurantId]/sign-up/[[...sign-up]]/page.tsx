@@ -54,15 +54,15 @@ export default function SignUpPage() {
     if (!signUp || resendCooldown > 0) return;
 
     try {
-      console.log('🔄 Resending verification code...');
+      console.log("🔄 Resending verification code...");
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
 
-      setResendAttempts(prev => prev + 1);
+      setResendAttempts((prev) => prev + 1);
       setResendCooldown(30); // 30 second cooldown
 
-      console.log('✅ Verification code resent successfully');
+      console.log("✅ Verification code resent successfully");
     } catch (error) {
-      console.error('❌ Error resending verification code:', error);
+      console.error("❌ Error resending verification code:", error);
     }
   }, [signUp, resendCooldown]);
 
@@ -70,7 +70,7 @@ export default function SignUpPage() {
   useEffect(() => {
     if (resendCooldown > 0) {
       const timer = setTimeout(() => {
-        setResendCooldown(prev => prev - 1);
+        setResendCooldown((prev) => prev - 1);
       }, 1000);
       return () => clearTimeout(timer);
     }
@@ -85,8 +85,8 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a8b9b] to-[#153f43] flex flex-col justify-center items-center px-4">
-      <div className="relative z-10 w-full max-w-md text-center flex flex-col items-center">
-        <div className="mb-12">
+      <div className="relative z-10 w-full max-w-md text-center flex flex-col items-center mb-12">
+        <div className="mb-6">
           <img
             src="/logo-short-green.webp"
             alt="Xquisito Logo"
@@ -94,10 +94,7 @@ export default function SignUpPage() {
           />
         </div>
         <div className="w-full">
-          <SignUp.Root
-            routing="virtual"
-            path={`/${restaurantId}/sign-up`}
-          >
+          <SignUp.Root routing="virtual" path={`/${restaurantId}/sign-up`}>
             <SignUp.Step name="start">
               {/*
               <div className="mb-6 text-center">
@@ -108,7 +105,7 @@ export default function SignUpPage() {
               */}
 
               {/* Personal Information */}
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <Clerk.Field name="firstName" className="space-y-1">
                     <div className="relative">
@@ -228,13 +225,10 @@ export default function SignUpPage() {
                 >
                   Crear cuenta
                 </SignUp.Action>
-                <div className="p-3 border border-white hover:bg-white/10 rounded-full cursor-pointer">
-                  <ScanFace className="size-6" />
-                </div>
               </div>
 
               <div
-                className="text-white text-sm my-8 underline cursor-pointer"
+                className="text-white text-sm my-6 underline cursor-pointer"
                 onClick={() => {
                   navigateWithTable("/payment-options");
                 }}
@@ -243,7 +237,7 @@ export default function SignUpPage() {
               </div>
 
               {/* Social Login */}
-              <div className="flex items-center justify-center gap-12 mb-6">
+              <div className="flex items-center justify-center gap-12">
                 <Clerk.Connection
                   name="google"
                   className="p-3 border border-white rounded-full hover:bg-white/10 transition-colors font-medium cursor-pointer"
@@ -301,7 +295,7 @@ export default function SignUpPage() {
                 </Clerk.Connection>
               </div>
 
-              <div className="relative my-6">
+              <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center pr-5">
                   <div className="w-1/2 border-t border-white" />
                 </div>
@@ -314,7 +308,7 @@ export default function SignUpPage() {
               </div>
 
               <div
-                className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full font-normal cursor-pointer transition-colors mt-6"
+                className="bg-black hover:bg-stone-950 w-full text-white py-3 rounded-full font-normal cursor-pointer transition-colors"
                 onClick={() => navigateWithTable("/sign-in")}
               >
                 Iniciar sesión
@@ -375,7 +369,8 @@ export default function SignUpPage() {
                   </p>
                   {resendAttempts > 0 && (
                     <p className="text-green-200 text-sm mt-2">
-                      Código reenviado {resendAttempts} {resendAttempts === 1 ? 'vez' : 'veces'}
+                      Código reenviado {resendAttempts}{" "}
+                      {resendAttempts === 1 ? "vez" : "veces"}
                     </p>
                   )}
                 </div>
@@ -402,14 +397,13 @@ export default function SignUpPage() {
                     disabled={resendCooldown > 0}
                     className={`text-sm underline transition-colors ${
                       resendCooldown > 0
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-white hover:text-gray-200 cursor-pointer'
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-white hover:text-gray-200 cursor-pointer"
                     }`}
                   >
                     {resendCooldown > 0
                       ? `Reenviar código en ${resendCooldown}s`
-                      : '¿No recibiste el código? Reenviar'
-                    }
+                      : "¿No recibiste el código? Reenviar"}
                   </button>
                 </div>
 
@@ -423,7 +417,9 @@ export default function SignUpPage() {
                       <p>• Revisa tu carpeta de spam/correo no deseado</p>
                       <p>• Verifica que la dirección de email sea correcta</p>
                       <p>• Espera de 2-3 minutos para recibir el código</p>
-                      <p>• Intenta reenviar el código usando el botón de arriba</p>
+                      <p>
+                        • Intenta reenviar el código usando el botón de arriba
+                      </p>
                     </div>
                   </details>
                 </div>
